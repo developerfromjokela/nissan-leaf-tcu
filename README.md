@@ -6,7 +6,8 @@ Info in this repository:
 - Protocol used in server communication
   - Data capture for analysis
   - Documentation
-- Configure TCU parameters with CAN (ELM327)
+- CAN documentation for configuring TCU parameters
+- Android app to configure TCU connection settings with OBD adapter
 
 
 ## Honorable mentions
