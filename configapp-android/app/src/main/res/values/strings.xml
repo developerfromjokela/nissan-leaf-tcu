@@ -1,0 +1,36 @@
+<resources>
+    <string name="app_name">Nissan Leaf Telematics</string>
+    <string name="select_device">Select ELM327</string>
+    <string name="none_found">No devices found</string>
+    <string name="title_paired_devices">Paired devices</string>
+    <string name="title_other_devices">Other devices</string>
+    <string name="button_scan">Scan</string>
+    <string name="permissions_not_given">Bluetooth permissions not granted! Please grant!</string>
+    <string name="none_paired">No paired devices</string>
+    <string name="scanning">Scanning...</string>
+    <string name="no_device_selected">No device selected</string>
+    <string name="disconnect">Disconnect</string>
+    <string name="connect">Connect</string>
+    <string name="read">READ</string>
+    <string name="write">WRITE</string>
+    <string name="apn_dial">APN Dial number</string>
+    <string name="apn_user">APN User</string>
+    <string name="apn_pass">APN Password</string>
+    <string name="apn_name">APN Name</string>
+    <string name="dns1">DNS1 (?)</string>
+    <string name="dns2">DNS2 (?)</string>
+    <string name="apn_connection_type">APN Connection Type (IP or PDP)</string>
+    <string name="server_hostname">Server hostname</string>
+    <string name="vin">VIN</string>
+    <string name="not_connected">Not connected! Please connect first.</string>
+    <string name="connection_init_finish">Connection with Telematics established</string>
+    <string name="data_empty">No data received!</string>
+    <string name="data_integrity_check">Data integrity check</string>
+    <string name="vin_too_long">VIN is too long!</string>
+    <string name="data_too_long">Data is too long! 128 char max!</string>
+    <string name="writing_data">Writing data</string>
+    <string name="writing_data_desc">Please do not disconnect ELM327!</string>
+    <string name="done_writing">Done writing data!</string>
+    <string name="empty_data">Empty data</string>
+    <string name="empty_data_warn">Are you sure you want to write blank data to this field?</string>
+</resources>
