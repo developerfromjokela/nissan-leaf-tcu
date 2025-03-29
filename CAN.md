@@ -56,7 +56,7 @@ Content:
 - [1] = Reception power
 - [2] = Error rate
 
-## APN Dial
+## PPP Dial
 
 Field ID: `0x10`  
 Field type: ASCII
@@ -69,7 +69,7 @@ Example:
 *99#
 ```
 
-## APN Username
+## PPP Username
 Field ID: `0x11`  
 Field type: ASCII
 
@@ -81,7 +81,7 @@ Example :
 zero
 ```
 
-## APN Password
+## PPP Password
 Field ID: `0x12`  
 Field type: ASCII
 
@@ -106,11 +106,11 @@ Example :
 gdc.nissan.cxn
 ```
 
-## APN Selection (?)
+## DNS1
 Field id: `0x14`  
 Field type: ASCII
 
-Purpose of command unknown, maybe related to choosing which communication profile? (when capturing, setting was auto)
+DNS1 IP address
 
 Example:
 ```hex
@@ -121,11 +121,11 @@ auto
 ```
 
 
-## APN Selection (?)
+## DNS2
 Field id: `0x15`  
 Field type: ASCII
 
-Purpose of command unknown, maybe related to choosing which communication profile? (when capturing, setting was auto)
+DNS2 IP address
 
 Example:
 ```hex
@@ -137,21 +137,25 @@ auto
 
 
 
-## (?)
+## Proxy Name
 Field id: `0x16`  
 Field type: ?
 
+Proxy hostname (no idea what kind of proxy, HTTP?)
+
 Nullbytes
 
 
-## (?)
+## Proxy port
 Field id: `0x17`  
 Field type: ?
 
+Port number of proxy
+
 Nullbytes
 
 
-## APN Connection Type
+## PDP Connection Type
 Field id: `0x18`  
 Field type: ASCII
 
@@ -172,7 +176,7 @@ Example:
 nissan-eu-dcm-biz.viaaq.eu
 ```
 
-## Proxy URL?
+## Connection Point
 Field id: `0x1C`  
 Field Type: ?
 
@@ -180,7 +184,7 @@ Field Type: ?
 33 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20
 ```
 
-## 0x1D (port number?)
+## Access Point Info
 Field id: `0x1D`  
 Field Type: ?
 
@@ -188,7 +192,7 @@ Field Type: ?
 30 20 20 20202020202020202020202020
 ```
 
-## 0x1E (port number?)
+## PPP Auth Logic
 Field id: `0x1E`  
 Field Type: ?
 
