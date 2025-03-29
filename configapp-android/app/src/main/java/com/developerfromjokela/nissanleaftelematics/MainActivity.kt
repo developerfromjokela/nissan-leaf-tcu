@@ -90,6 +90,8 @@ class MainActivity : AppCompatActivity() {
         TCUConfigItem(configId = 0x13, fieldLength = 128, type = 1, fieldMaxLength = 128, readOnly = false, uiName = R.string.apn_name),
         TCUConfigItem(configId = 0x14, fieldLength = 128, type = 1, fieldMaxLength = 128, readOnly = false, uiName = R.string.dns1),
         TCUConfigItem(configId = 0x15, fieldLength = 128, type = 1, fieldMaxLength = 128, readOnly = false, uiName = R.string.dns2),
+        TCUConfigItem(configId = 0x16, fieldLength = 128, type = 1, fieldMaxLength = 128, readOnly = false, uiName = R.string.proxy),
+        TCUConfigItem(configId = 0x17, fieldLength = 128, type = 1, fieldMaxLength = 128, readOnly = false, uiName = R.string.proxy_port),
         TCUConfigItem(configId = 0x18, fieldLength = 128, type = 1, fieldMaxLength = 128, readOnly = false, uiName = R.string.apn_connection_type),
         TCUConfigItem(configId = 0x19, fieldLength = 128, type = 1, fieldMaxLength = 128, readOnly = false, uiName = R.string.server_hostname),
     )
