@@ -17,8 +17,10 @@
     <string name="apn_user">APN User</string>
     <string name="apn_pass">APN Password</string>
     <string name="apn_name">APN Name</string>
-    <string name="dns1">DNS1 (?)</string>
-    <string name="dns2">DNS2 (?)</string>
+    <string name="dns1">DNS1</string>
+    <string name="dns2">DNS2</string>
+    <string name="proxy">Proxy hostname</string>
+    <string name="proxy_port">Proxy port</string>
     <string name="apn_connection_type">APN Connection Type (IP or PDP)</string>
     <string name="server_hostname">Server hostname</string>
     <string name="vin">VIN</string>
