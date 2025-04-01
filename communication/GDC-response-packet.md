@@ -5,7 +5,7 @@ Structure Data packets from TCU -> Server
 # Common packet structure for Type 1 and 3
 
 - [1] Packet type
-- [2] ? - (protocol version?)
+- [2] Car identifier (02=ZE0, 92=AZE0)
 - [3] Extra data flag?
 - [4] Packet overall size (bytes, unsigned int) (NOTE: does not match on type 5 messages)
 - [5-8] 20 5E B1 70 (Car model or configuration flags?)
