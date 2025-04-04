@@ -43,13 +43,16 @@ def hex_to_location(hex_string):
     latitude = lat_deg + (lat_min / 60.0) + (lat_sec_float / 3600.0)
     longitude = lon_deg + (lon_min / 60.0) + (lon_sec_float / 3600.0)
 
-    # Assume North and East (latitude_mode and longitude_mode not provided)
-    lat_str = f"{latitude:.7f}° N"
-    lon_str = f"{longitude:.7f}° E"
+    # Apply coordinates based on latitude and longitude modes
+    if latitude_mode == "South":
+        latitude = -latitude
+    if longitude_mode == "West":
+        longitude = -longitude
+
 
     return {
-        "latitude": lat_str,
-        "longitude": lon_str,
+        "latitude": latitude,
+        "longitude": longitude,
         "home_status": home_status,
         "home_raw": f"0x{home_byte:02X}",
         "position_status": position_status,
