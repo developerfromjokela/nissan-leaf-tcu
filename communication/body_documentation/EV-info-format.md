@@ -11,3 +11,4 @@ Format is documented in EVInfo spreadsheet.
 
 Currently documented for cars:
 - ZE0 2011
+- AZE0 2013-2015 with 24 kWh
