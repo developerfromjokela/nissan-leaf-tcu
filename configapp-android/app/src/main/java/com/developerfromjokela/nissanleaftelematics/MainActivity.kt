@@ -400,7 +400,7 @@ class MainActivity : AppCompatActivity() {
                         when (packet1.data[0].toInt()) {
                             97 -> {
                                 // DATA from TCU
-                                handleReadFieldData(packet1.data[1].toUByte(), (packet1.data).copyOfRange(2, packet1.data.size-2))
+                                handleReadFieldData(packet1.data[1].toUByte(), (packet1.data).sliceArray(2 until packet1.data.size))
                             }
                             else -> {
                                 Toast.makeText(this, "Unknown message type: ${packet1.data[0].toInt()}", Toast.LENGTH_LONG).show()
