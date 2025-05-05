@@ -28,6 +28,7 @@ class TCUConfigAdapter(
         return ViewHolder(view)
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val configItem = configItems[position]
 
@@ -43,8 +44,17 @@ class TCUConfigAdapter(
         if (configItem.currentReadValue != null) {
             if (configItem.type == 0) {
                 holder.valueField.setText(String(configItem.currentReadValue!!))
-            } else {
+            } else if (configItem.type == 1) {
                 holder.valueField.setText(String((configItem.currentReadValue!!).copyOfRange(1, configItem.currentReadValue!!.size-1)).trim { it <= ' ' })
+            } else if (configItem.type == 2) {
+                holder.valueField.setText(configItem.currentReadValue!!.toHexString())
+            } else {
+                val telAntLevel = configItem.currentReadValue!![0].toInt()
+                val receptionPower = configItem.currentReadValue!![1].toInt()
+                val errorRate = configItem.currentReadValue!![2].toInt()
+                holder.valueField.setText(
+                    "ANT:${telAntLevel},RECEPTION:${receptionPower},ERRRATE:${errorRate}",
+                )
             }
         }
 

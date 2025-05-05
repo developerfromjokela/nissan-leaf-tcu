@@ -83,6 +83,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var selectedDevNameTxt: TextView
     private lateinit var tcuConfigRV: RecyclerView
     private var configItems = mutableListOf(
+        TCUConfigItem(configId = 0x04, fieldLength = 1, type = 2, fieldMaxLength = 1, readOnly = false, uiName = R.string.activation),
+        TCUConfigItem(configId = 0x09, fieldLength = 20, type = 3, fieldMaxLength = 20, readOnly = true, uiName = R.string.signal_level),
         TCUConfigItem(configId = 0x81, fieldLength = 17, type = 0, fieldMaxLength = 17, readOnly = false, uiName = R.string.vin),
         TCUConfigItem(configId = 0x10, fieldLength = 128, type = 1, fieldMaxLength = 128, readOnly = false, uiName = R.string.apn_dial),
         TCUConfigItem(configId = 0x11, fieldLength = 128, type = 1, fieldMaxLength = 128, readOnly = false, uiName = R.string.apn_user),
@@ -542,6 +544,21 @@ class MainActivity : AppCompatActivity() {
             val dataValBuff = ByteArray(128)
             dataVal.copyInto(dataValBuff)
             val hexCMD = "3B"+("%02x".format(item.configId).uppercase())+"01"+dataValBuff.toHexString(HexFormat.Default).uppercase()
+            println("CAN $hexCMD")
+            val payloadParts = payloadMaker.processCommandToFrames(hexCMD)
+            currentWriteOperationTotalMsgCount = payloadParts.size
+            mChatService?.makeOBDMultiCommand(payloadParts.map {
+                stringHexToOBDCommand(it)
+            }, DATAWRITE_OPERATION)
+            return
+        } else if (item.type == 2) {
+            // TCU activation write
+            if (newVal.length > 1) {
+                Toast.makeText(this, R.string.data_too_long, Toast.LENGTH_SHORT).show()
+                return
+            }
+            val actState = newVal.toInt()
+            val hexCMD = "3B"+("%02x".format(item.configId).uppercase())+(if (actState > 0) "01" else "00").uppercase()
             println("CAN $hexCMD")
             val payloadParts = payloadMaker.processCommandToFrames(hexCMD)
             currentWriteOperationTotalMsgCount = payloadParts.size
