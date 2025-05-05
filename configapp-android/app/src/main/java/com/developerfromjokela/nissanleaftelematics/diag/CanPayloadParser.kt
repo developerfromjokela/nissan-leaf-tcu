@@ -1,7 +1,5 @@
 package com.developerfromjokela.nissanleaftelematics.diag
 
-import java.lang.Exception
-
 data class CanPacket(
     val dataLength: Int,
     val data: ByteArray? = null
@@ -17,6 +15,7 @@ class CanPayloadParser {
         var data: ByteArray? = null
         for (chunk in cleanHex.chunked(16)) {
             val packetId = chunk.substring(0, 2).toInt(radix = 16)
+            println(packetId)
             if (packetId == 16) {
                 if (chunk.length < 8) {
                     println("Header malformed $chunk")
@@ -40,6 +39,11 @@ class CanPayloadParser {
                 } else {
                     newChunk
                 }
+            } else {
+                dataLength = packetId
+                val firstDataChunk = chunk.substring(2).hexToByteArray()
+                data = ByteArray(0)
+                data += firstDataChunk.copyOf(dataLength)
             }
         }
         println("DATALEN $dataLength, READDATA:${data?.size}")

@@ -47,7 +47,7 @@ class TCUConfigAdapter(
             } else if (configItem.type == 1) {
                 holder.valueField.setText(String((configItem.currentReadValue!!).copyOfRange(1, configItem.currentReadValue!!.size-1)).trim { it <= ' ' })
             } else if (configItem.type == 2) {
-                holder.valueField.setText(configItem.currentReadValue!!.toHexString())
+                holder.valueField.setText(configItem.currentReadValue!![0].toInt())
             } else {
                 val telAntLevel = configItem.currentReadValue!![0].toInt()
                 val receptionPower = configItem.currentReadValue!![1].toInt()

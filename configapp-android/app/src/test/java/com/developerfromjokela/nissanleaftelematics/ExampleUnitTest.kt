@@ -21,6 +21,13 @@ class ExampleUnitTest {
         println(CanPayloadMaker().processCommandToFrames("3B 13 01 69 6E 74 65 72 6E 65 74 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"))
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
+    @Test
+    fun payloadParser() {
+        println(CanPayloadParser().parse("03610401FFFFFFFF").data!!.toHexString())
+        println(CanPayloadParser().parse("05610900104FFFFF").data!!.toHexString())
+    }
+
 
     @OptIn(ExperimentalStdlibApi::class)
     @Test
