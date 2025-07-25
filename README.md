@@ -17,6 +17,8 @@ Info in this repository:
 
 > 
 > If you're looking for the server code (opencarwings), check out [this repo.](https://github.com/developerfromjokela/opencarwings)
+>
+> Check out also toolbox for the navigation unit: [Leaf SD Tools](https://github.com/developerfromjokela/leafsdtools)
 > 
 
 ## Honorable mentions
