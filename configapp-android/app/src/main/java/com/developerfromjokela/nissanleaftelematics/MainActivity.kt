@@ -18,6 +18,8 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -26,8 +28,11 @@ import androidx.core.app.ActivityCompat
 import androidx.core.view.MenuProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.transition.Visibility
+import com.developerfromjokela.nissanleaftelematics.bluetooth.BaseBluetoothService
 import com.developerfromjokela.nissanleaftelematics.bluetooth.BluetoothService
 import com.developerfromjokela.nissanleaftelematics.bluetooth.DeviceSelectActivity
+import com.developerfromjokela.nissanleaftelematics.bluetooth.ble.BleSocket
 import com.developerfromjokela.nissanleaftelematics.config.TCUConfigAdapter
 import com.developerfromjokela.nissanleaftelematics.config.TCUConfigItem
 import com.developerfromjokela.nissanleaftelematics.diag.CanPayloadMaker
@@ -71,7 +76,7 @@ class MainActivity : AppCompatActivity() {
     private var mBluetoothAdapter: BluetoothAdapter? = null
 
     // Member object for the chat services
-    private var mChatService: BluetoothService? = null
+    private var mChatService: BaseBluetoothService? = null
 
     private var connected = false
     private var dataIntegrity = true
@@ -80,6 +85,7 @@ class MainActivity : AppCompatActivity() {
     private var currentWriteOperationTotalMsgCount = 0
 
     private lateinit var connectBtn: Button
+    private lateinit var connectBtnBle: Button
     private lateinit var selectedDevNameTxt: TextView
     private lateinit var tcuConfigRV: RecyclerView
     private var configItems = mutableListOf(
@@ -131,6 +137,7 @@ class MainActivity : AppCompatActivity() {
         // UI
 
         connectBtn = findViewById(R.id.connectBtn)
+        connectBtnBle = findViewById(R.id.connectBtnBle)
         selectedDevNameTxt = findViewById(R.id.deviceName)
         tcuConfigRV = findViewById(R.id.tcuConfigRV)
         tcuConfigRV.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
@@ -168,17 +175,12 @@ class MainActivity : AppCompatActivity() {
             finish()
             return
         }
-        if (mChatService != null) {
-            if (mChatService!!.state == BluetoothService.STATE_NONE) {
-                mChatService!!.start()
-            }
-        }
 
         if (!mBluetoothAdapter!!.isEnabled()) {
             val enableIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
             startActivityForResult(enableIntent, 3)
         } else {
-            if (mChatService == null) setupChat()
+            setupChat()
         }
     }
 
@@ -189,21 +191,24 @@ class MainActivity : AppCompatActivity() {
             when (msg.what) {
                 MESSAGE_STATE_CHANGE -> {
                     when (msg.arg1) {
-                        BluetoothService.STATE_CONNECTED -> {
+                        BaseBluetoothService.STATE_CONNECTED -> {
                             connected = true;
                             connectBtn.isEnabled = true
+                            connectBtnBle.visibility = GONE
                             connectBtn.setText(R.string.disconnect)
                             selectedDevNameTxt.text = mConnectedDeviceName
                             onConnected()
                         }
 
-                        BluetoothService.STATE_CONNECTING -> {
+                        BaseBluetoothService.STATE_CONNECTING -> {
                             connectBtn.isEnabled = false
+                            connectBtnBle.visibility = GONE
                         }
 
-                        BluetoothService.STATE_LISTEN, BluetoothService.STATE_NONE -> {
+                        BaseBluetoothService.STATE_LISTEN, BaseBluetoothService.STATE_NONE -> {
                             connected = false
                             connectBtn.isEnabled = true
+                            connectBtnBle.visibility = VISIBLE
                             selectedDevNameTxt.setText(R.string.no_device_selected)
                         }
                     }
@@ -242,9 +247,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupChat() {
-        mChatService = BluetoothService(this, mHandler)
+        connectBtnBle.visibility = VISIBLE
         connectBtn.isEnabled = true
+        connectBtnBle.isEnabled = true
     }
+
 
     private fun onConnected() {
         val initPid = PID()
@@ -435,23 +442,38 @@ class MainActivity : AppCompatActivity() {
                 connectBtn.setText(R.string.connect)
             }
         }
+        connectBtnBle.setOnClickListener {
+            if (!connected) {
+                val serverIntent = Intent(this, DeviceSelectActivity::class.java)
+                startActivityForResult(serverIntent, 1)
+            }
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         when (requestCode) {
+            1 ->             // When DeviceListActivity returns with a device to connect
+                if (resultCode == RESULT_OK) {
+                    if (data != null) {
+                        mChatService = BleSocket(this, mHandler)
+                        connectDevice(data)
+                    }
+                }
+
             2 ->             // When DeviceListActivity returns with a device to connect
                 if (resultCode == RESULT_OK) {
                     if (data != null) {
+                        mChatService = BluetoothService(this, mHandler)
                         connectDevice(data)
                     }
                 }
 
             3 -> if (resultCode == RESULT_OK) {
-                if (mChatService == null) setupChat()
+                setupChat()
             } else {
                 Toast.makeText(this, "BT not enabled", Toast.LENGTH_SHORT).show()
-                if (mChatService == null) setupChat()
+                setupChat()
             }
         }
     }
@@ -531,7 +553,7 @@ class MainActivity : AppCompatActivity() {
             currentWriteOperationTotalMsgCount = payloadParts.size
             mChatService?.makeOBDMultiCommand(payloadParts.map {
                 stringHexToOBDCommand(it)
-            }, DATAWRITE_OPERATION)
+            }.toMutableList(), DATAWRITE_OPERATION)
             return
         } else if (item.type == 1) {
             // data item write
@@ -549,7 +571,7 @@ class MainActivity : AppCompatActivity() {
             currentWriteOperationTotalMsgCount = payloadParts.size
             mChatService?.makeOBDMultiCommand(payloadParts.map {
                 stringHexToOBDCommand(it)
-            }, DATAWRITE_OPERATION)
+            }.toMutableList(), DATAWRITE_OPERATION)
             return
         } else if (item.type == 2) {
             // TCU activation write
@@ -564,7 +586,7 @@ class MainActivity : AppCompatActivity() {
             currentWriteOperationTotalMsgCount = payloadParts.size
             mChatService?.makeOBDMultiCommand(payloadParts.map {
                 stringHexToOBDCommand(it)
-            }, DATAWRITE_OPERATION)
+            }.toMutableList(), DATAWRITE_OPERATION)
             return
         }
         Toast.makeText(this, "NOT IMPLEMENTED", Toast.LENGTH_SHORT).show()

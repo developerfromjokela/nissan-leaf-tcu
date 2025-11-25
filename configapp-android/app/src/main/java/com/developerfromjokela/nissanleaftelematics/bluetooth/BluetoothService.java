@@ -25,7 +25,7 @@ import com.pnuema.android.obd.commands.OBDCommand;
  * incoming connections, a thread for connecting with a device, and a
  * thread for performing data transmissions when connected.
  */
-public class BluetoothService {
+public class BluetoothService extends BaseBluetoothService {
     // Debugging
     private static final String TAG = "BluetoothService";
     private static final boolean D = true;
@@ -49,18 +49,13 @@ public class BluetoothService {
     private ConnectedThread mConnectedThread;
     private int mState;
 
-    // Constants that indicate the current connection state
-    public static final int STATE_NONE = 0;       // we're doing nothing
-    public static final int STATE_LISTEN = 1;     // now listening for incoming connections
-    public static final int STATE_CONNECTING = 2; // now initiating an outgoing connection
-    public static final int STATE_CONNECTED = 3;  // now connected to a remote device
-
     /**
      * Constructor. Prepares a new BluetoothChat session.
      * @param context  The UI Activity Context
      * @param handler  A Handler to send messages back to the UI Activity
      */
     public BluetoothService(Context context, Handler handler) {
+        super(context, handler);
         mAdapter = BluetoothAdapter.getDefaultAdapter();
         mState = STATE_NONE;
         mHandler = handler;
@@ -109,6 +104,7 @@ public class BluetoothService {
      * Start the ConnectThread to initiate a connection to a remote device.
      * @param device  The BluetoothDevice to connect
      */
+    @Override
     public synchronized void connect(BluetoothDevice device) {
         if (D) Log.d(TAG, "connect to: " + device);
 
@@ -163,6 +159,7 @@ public class BluetoothService {
     /**
      * Stop all threads
      */
+    @Override
     public synchronized void stop() {
         if (D) Log.d(TAG, "stop");
 
@@ -183,6 +180,7 @@ public class BluetoothService {
         setState(STATE_NONE);
     }
 
+    @Override
     public void makeOBDCommand(BaseObdCommand command, int id) {
         // Create temporary object
         ConnectedThread r;

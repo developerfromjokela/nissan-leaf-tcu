@@ -37,4 +37,5 @@
     <string name="empty_data_warn">Are you sure you want to write blank data to this field?</string>
     <string name="activation">TCU activation</string>
     <string name="signal_level">Signal level</string>
+    <string name="pairing_request">Please pair with the device and try again!</string>
 </resources>
