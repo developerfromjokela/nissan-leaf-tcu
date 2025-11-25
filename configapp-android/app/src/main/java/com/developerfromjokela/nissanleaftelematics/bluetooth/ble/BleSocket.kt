@@ -260,7 +260,10 @@ class BleSocket(context: Context, callback: Handler?) : BaseBluetoothService(con
         writePending = false
         for (gattService in gatt.getServices()) {
             if (gattService.getUuid() == BLUETOOTH_LE_OBD) delegate =
-                this.ObdService()
+                this.ObdGenericDelegate()
+
+            if (gattService.uuid == BLUETOOTH_LE_LELINK)
+                delegate = this.LELinkDelegate()
 
             if (delegate != null) {
                 sync = delegate!!.connectCharacteristics(gattService)
@@ -487,7 +490,7 @@ class BleSocket(context: Context, callback: Handler?) : BaseBluetoothService(con
     /**
      * device delegates
      */
-    private inner class ObdService() : DeviceDelegate() {
+    private inner class ObdGenericDelegate() : DeviceDelegate() {
         override fun connectCharacteristics(gattService: BluetoothGattService?): Boolean {
             Log.d(TAG, "service obd uart")
             readCharacteristic = gattService?.getCharacteristic(BLUETOOTH_LE_OBD)
@@ -496,10 +499,21 @@ class BleSocket(context: Context, callback: Handler?) : BaseBluetoothService(con
         }
     }
 
+    private inner class LELinkDelegate() : DeviceDelegate() {
+        override fun connectCharacteristics(gattService: BluetoothGattService?): Boolean {
+            Log.d(TAG, "service lelink uart")
+            readCharacteristic = gattService?.getCharacteristic(BLUETOOTH_LE_LELINK)
+            writeCharacteristic = gattService?.getCharacteristic(BLUETOOTH_LE_LELINK)
+            return true
+        }
+    }
+
 
     companion object {
         private val BLUETOOTH_LE_OBD: UUID =
             UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
+
+        private val BLUETOOTH_LE_LELINK: UUID = UUID.fromString("0000ffe1-0000-1000-8000-00805f9b34fb")
 
         private val BLUETOOTH_LE_CCCD: UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
 

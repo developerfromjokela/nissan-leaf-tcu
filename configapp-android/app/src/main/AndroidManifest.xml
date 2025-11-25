@@ -29,6 +29,7 @@
         </activity>
 
         <activity android:name=".bluetooth.DeviceSelectActivity" android:label="@string/select_device"/>
+        <activity android:name=".bluetooth.BleDeviceSelectActivity" android:label="@string/select_device_ble"/>
     </application>
 
 </manifest>

@@ -30,6 +30,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.transition.Visibility
 import com.developerfromjokela.nissanleaftelematics.bluetooth.BaseBluetoothService
+import com.developerfromjokela.nissanleaftelematics.bluetooth.BleDeviceSelectActivity
 import com.developerfromjokela.nissanleaftelematics.bluetooth.BluetoothService
 import com.developerfromjokela.nissanleaftelematics.bluetooth.DeviceSelectActivity
 import com.developerfromjokela.nissanleaftelematics.bluetooth.ble.BleSocket
@@ -444,7 +445,7 @@ class MainActivity : AppCompatActivity() {
         }
         connectBtnBle.setOnClickListener {
             if (!connected) {
-                val serverIntent = Intent(this, DeviceSelectActivity::class.java)
+                val serverIntent = Intent(this, BleDeviceSelectActivity::class.java)
                 startActivityForResult(serverIntent, 1)
             }
         }
