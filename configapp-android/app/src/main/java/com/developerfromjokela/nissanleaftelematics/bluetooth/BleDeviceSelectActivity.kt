@@ -123,7 +123,8 @@ class BleDeviceSelectActivity : AppCompatActivity() {
         updateScanButton("Stop Scan", true)
 
         val settings = ScanSettings.Builder()
-            .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+            .setScanMode(ScanSettings.SCAN_MODE_BALANCED)
+            .setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES)
             .build()
 
         scanner!!.startScan(null, settings, scanCallback)
