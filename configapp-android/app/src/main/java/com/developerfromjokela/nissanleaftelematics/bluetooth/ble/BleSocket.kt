@@ -94,7 +94,6 @@ class BleSocket(context: Context, callback: Handler?) : BaseBluetoothService(con
     private var payloadSize = DEFAULT_MTU - 3
 
     init {
-        if (context is Activity) throw InvalidParameterException("expected non UI context")
         writeBuffer = ArrayList<ByteArray?>()
         pairingIntentFilter = IntentFilter()
         pairingIntentFilter.addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED)

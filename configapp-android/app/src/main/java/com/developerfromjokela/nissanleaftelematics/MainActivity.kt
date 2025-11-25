@@ -458,7 +458,11 @@ class MainActivity : AppCompatActivity() {
                 if (resultCode == RESULT_OK) {
                     if (data != null) {
                         mChatService = BleSocket(this, mHandler)
-                        connectDevice(data)
+                        try {
+                            connectDevice(data)
+                        } catch (e: Exception) {
+                            Toast.makeText(this, e.message, Toast.LENGTH_SHORT).show()
+                        }
                     }
                 }
 
@@ -466,7 +470,11 @@ class MainActivity : AppCompatActivity() {
                 if (resultCode == RESULT_OK) {
                     if (data != null) {
                         mChatService = BluetoothService(this, mHandler)
-                        connectDevice(data)
+                        try {
+                            connectDevice(data)
+                        } catch (e: Exception) {
+                            Toast.makeText(this, e.message, Toast.LENGTH_SHORT).show()
+                        }
                     }
                 }
 
