@@ -8,3 +8,11 @@ TCU in Nissan Leaf 2016 and newer have shared TCU part with Renault.
 
 ### Firmware
 Extracted and unzipped firmware from update package. 
+
+### SIM Slot
+
+Soldering a sim slot is needed, it does not come with one from factory.  
+
+<img src="https://github.com/user-attachments/assets/2c85aa56-f7b3-409c-a7f5-5ee9c3a7cbf8" height="500px"/>
+
+As you see the slot in this picture, top most right pin is ground of simslot(orange arrow), all other ones are data. The unsoldered pad on far left is also ground, both on top and bottom (blue arrow). Those ones are unused.
