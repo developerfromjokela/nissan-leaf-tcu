@@ -1,9 +1,11 @@
 package com.developerfromjokela.nissanleaftelematics
 
 import android.widget.Toast
+import com.developerfromjokela.nissanleaftelematics.config.TCUConfigItem
 import com.developerfromjokela.nissanleaftelematics.diag.CanPacketParser
 import com.developerfromjokela.nissanleaftelematics.diag.CanPayloadMaker
 import com.developerfromjokela.nissanleaftelematics.diag.CanPayloadParser
+import com.developerfromjokela.nissanleaftelematics.profiles.Continental2012
 import org.junit.Test
 
 import org.junit.Assert.*
@@ -37,5 +39,16 @@ class ExampleUnitTest {
         val dataValBuff = ByteArray(128)
         dataVal.copyInto(dataValBuff)
         println("3B"+("%02x".format(0x13).uppercase())+"01"+dataValBuff.toHexString(HexFormat.Default).uppercase())
+    }
+
+    @OptIn(ExperimentalStdlibApi::class)
+    @Test
+    fun makeDataRequestContinental2012() {
+        println("3B 13 01 69 6E 74 65 72 6E 65 74 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00".trim().replace(" ", "")) // from ddt4all
+        val dataVal = "internet".toByteArray(charset = Charsets.US_ASCII)
+        val dataValBuff = ByteArray(128)
+        dataVal.copyInto(dataValBuff)
+
+        println(Continental2012().makeOBDWrite(TCUConfigItem(0x13, 128, 1, 0, false, 128), dataValBuff))
     }
 }

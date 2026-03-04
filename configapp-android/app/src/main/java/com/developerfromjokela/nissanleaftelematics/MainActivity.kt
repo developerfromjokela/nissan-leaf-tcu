@@ -32,6 +32,9 @@ import com.developerfromjokela.nissanleaftelematics.config.TCUConfigAdapter
 import com.developerfromjokela.nissanleaftelematics.config.TCUConfigItem
 import com.developerfromjokela.nissanleaftelematics.diag.CanPayloadMaker
 import com.developerfromjokela.nissanleaftelematics.diag.CanPayloadParser
+import com.developerfromjokela.nissanleaftelematics.profiles.AbstractTCUProfile
+import com.developerfromjokela.nissanleaftelematics.profiles.Continental2012
+import com.developerfromjokela.nissanleaftelematics.profiles.FicosaGen2
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.pnuema.android.obd.commands.OBDCommand
 import com.pnuema.android.obd.models.PID
@@ -47,15 +50,12 @@ class MainActivity : AppCompatActivity() {
         const val MESSAGE_TOAST = 5
         const val MESSAGE_RESULT_MULTI = 6
         const val INIT_MSG_1 = 10
-        const val ADV_DIAG = "0210C0"
         const val MODULE_RESET = 11
         const val MODULE_ATE1 = 12
         const val MODULE_ATS0 = 13
         const val MODULE_ATH0 = 14
         const val MODULE_ATL0 = 15
         const val MODULE_ATCAF0 = 16
-        const val MODULE_TXID = 746
-        const val MODULE_RXID = 783
         const val MODULE_ATSH = 17
         const val MODULE_ATCRA = 18
         const val DATAREQ = 996
@@ -65,6 +65,11 @@ class MainActivity : AppCompatActivity() {
 
         const val DATAWRITE_OPERATION = 1002
     }
+
+    private val PROFILES = arrayOf<AbstractTCUProfile>(
+        Continental2012(),
+        FicosaGen2()
+    )
 
     private var mConnectedDeviceName: String? = null
 
@@ -82,24 +87,13 @@ class MainActivity : AppCompatActivity() {
     private lateinit var connectBtn: Button
     private lateinit var selectedDevNameTxt: TextView
     private lateinit var tcuConfigRV: RecyclerView
-    private var configItems = mutableListOf(
-        TCUConfigItem(configId = 0x04, fieldLength = 1, type = 2, fieldMaxLength = 1, readOnly = false, uiName = R.string.activation),
-        TCUConfigItem(configId = 0x09, fieldLength = 20, type = 3, fieldMaxLength = 20, readOnly = true, uiName = R.string.signal_level),
-        TCUConfigItem(configId = 0x81, fieldLength = 17, type = 0, fieldMaxLength = 17, readOnly = false, uiName = R.string.vin),
-        TCUConfigItem(configId = 0x10, fieldLength = 128, type = 1, fieldMaxLength = 128, readOnly = false, uiName = R.string.apn_dial),
-        TCUConfigItem(configId = 0x11, fieldLength = 128, type = 1, fieldMaxLength = 128, readOnly = false, uiName = R.string.apn_user),
-        TCUConfigItem(configId = 0x12, fieldLength = 128, type = 1, fieldMaxLength = 128, readOnly = false, uiName = R.string.apn_pass),
-        TCUConfigItem(configId = 0x13, fieldLength = 128, type = 1, fieldMaxLength = 128, readOnly = false, uiName = R.string.apn_name),
-        TCUConfigItem(configId = 0x14, fieldLength = 128, type = 1, fieldMaxLength = 128, readOnly = false, uiName = R.string.dns1),
-        TCUConfigItem(configId = 0x15, fieldLength = 128, type = 1, fieldMaxLength = 128, readOnly = false, uiName = R.string.dns2),
-        TCUConfigItem(configId = 0x16, fieldLength = 128, type = 1, fieldMaxLength = 128, readOnly = false, uiName = R.string.proxy),
-        TCUConfigItem(configId = 0x17, fieldLength = 128, type = 1, fieldMaxLength = 128, readOnly = false, uiName = R.string.proxy_port),
-        TCUConfigItem(configId = 0x18, fieldLength = 128, type = 1, fieldMaxLength = 128, readOnly = false, uiName = R.string.apn_connection_type),
-        TCUConfigItem(configId = 0x19, fieldLength = 128, type = 1, fieldMaxLength = 128, readOnly = false, uiName = R.string.server_hostname),
-    )
+    private var configItems = mutableListOf<TCUConfigItem>()
     private var tcuConfAdapter = TCUConfigAdapter(configItems, {i -> this.onReadClick(i)}, {tcuConfigItem, s ->  this.onWriteClick(tcuConfigItem, s)})
 
     private var progressDialog: ProgressDialog? = null
+
+    private var currentTCUProfile: AbstractTCUProfile? = null
+
 
     private lateinit var wl: WakeLock
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -121,6 +115,8 @@ class MainActivity : AppCompatActivity() {
                     menuItem.isChecked = !menuItem.isChecked
                     dataIntegrity = menuItem.isChecked
                     Log.e("MA", "Dataintegrity: $dataIntegrity")
+                } else if (menuItem.itemId == R.id.chooseDevice) {
+                    chooseDevice()
                 }
                 return true
             }
@@ -159,6 +155,23 @@ class MainActivity : AppCompatActivity() {
             return
         }
         initBT()
+    }
+
+    private fun chooseDevice() {
+        if (connected) {
+            Toast.makeText(this, R.string.disconnect_first, Toast.LENGTH_SHORT).show()
+            return
+        }
+        val items = PROFILES.map { getString(it.nameRes) }.toTypedArray()
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.choose_tcu_model)
+            .setCancelable(false)
+            .setItems(items) { dialog, which ->
+                currentTCUProfile = PROFILES[which]
+                dialog.dismiss()
+            }
+            .show()
     }
 
     private fun initBT() {
@@ -244,6 +257,7 @@ class MainActivity : AppCompatActivity() {
     private fun setupChat() {
         mChatService = BluetoothService(this, mHandler)
         connectBtn.isEnabled = true
+        chooseDevice()
     }
 
     private fun onConnected() {
@@ -333,7 +347,7 @@ class MainActivity : AppCompatActivity() {
                     return
                 }
                 initPid.mode = "$MODE_AT SH"
-                initPid.PID = MODULE_TXID.toString()
+                initPid.PID = currentTCUProfile?.canTX.toString()
                 val cmd = OBDCommand(initPid).setIgnoreResult(true)
                 mChatService?.makeOBDCommand(cmd, MODULE_ATSH)
             }
@@ -343,7 +357,7 @@ class MainActivity : AppCompatActivity() {
                     return
                 }
                 initPid.mode = "$MODE_AT CRA"
-                initPid.PID = MODULE_RXID.toString()
+                initPid.PID = currentTCUProfile?.canRX.toString()
                 val cmd = OBDCommand(initPid).setIgnoreResult(true)
                 mChatService?.makeOBDCommand(cmd, MODULE_ATCRA)
             }
@@ -353,7 +367,7 @@ class MainActivity : AppCompatActivity() {
                     return
                 }
                 initPid.mode = "$MODE_AT FC SH"
-                initPid.PID = MODULE_TXID.toString()
+                initPid.PID = currentTCUProfile?.canTX.toString()
                 val cmd = OBDCommand(initPid).setIgnoreResult(true)
                 mChatService?.makeOBDCommand(cmd, MODULE_ATCRA+1)
             }
@@ -428,6 +442,10 @@ class MainActivity : AppCompatActivity() {
     private fun initUIListeners() {
         connectBtn.setOnClickListener {
             if (!connected) {
+                if (currentTCUProfile == null) {
+                    chooseDevice()
+                    return@setOnClickListener
+                }
                 val serverIntent = Intent(this, DeviceSelectActivity::class.java)
                 startActivityForResult(serverIntent, 2)
             } else {
@@ -478,15 +496,23 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, R.string.not_connected, Toast.LENGTH_SHORT).show()
             return
         }
-        // Set diag mode
-        val diagPid = PID()
-        diagPid.mode = ADV_DIAG
-        diagPid.PID = ""
-        mChatService?.makeOBDCommand(OBDCommand(diagPid).setIgnoreResult(true), NORESP)
+
+        if (currentTCUProfile == null) {
+            Toast.makeText(this, R.string.device_type_not_selected, Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        for (item in currentTCUProfile!!.initSeq) {
+            // Set diag mode
+            val diagPid = PID()
+            diagPid.mode = item
+            diagPid.PID = ""
+            mChatService?.makeOBDCommand(OBDCommand(diagPid).setIgnoreResult(true), NORESP)
+        }
 
         // Read value
         val readPid = PID()
-        readPid.mode = "0221"+("%02x".format(item.configId).uppercase())
+        readPid.mode = currentTCUProfile!!.makeOBDRead(item)
         readPid.PID = ""
         mChatService?.makeOBDCommand(OBDCommand(readPid), DATAREQ)
     }
@@ -515,58 +541,37 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        if (item.type == 0) {
-            // VIN write
-            if (newVal.length > 17) {
-                Toast.makeText(this, R.string.vin_too_long, Toast.LENGTH_SHORT).show()
-                return
-            }
-            progressDialog!!.show()
-            val vinInfo = newVal.toByteArray(charset = Charsets.US_ASCII)
-            val vinInfoBuff = ByteArray(17)
-            vinInfo.copyInto(vinInfoBuff)
-            val hexCMD = "3B81"+vinInfoBuff.toHexString(HexFormat.Default).uppercase()+"0000"
-            println("CAN $hexCMD")
-            val payloadParts = payloadMaker.processCommandToFrames(hexCMD)
-            currentWriteOperationTotalMsgCount = payloadParts.size
-            mChatService?.makeOBDMultiCommand(payloadParts.map {
-                stringHexToOBDCommand(it)
-            }, DATAWRITE_OPERATION)
-            return
-        } else if (item.type == 1) {
-            // data item write
-            if (newVal.length > 128) {
-                Toast.makeText(this, R.string.data_too_long, Toast.LENGTH_SHORT).show()
-                return
-            }
-            progressDialog!!.show()
-            val dataVal = newVal.toByteArray(charset = Charsets.US_ASCII)
-            val dataValBuff = ByteArray(128)
-            dataVal.copyInto(dataValBuff)
-            val hexCMD = "3B"+("%02x".format(item.configId).uppercase())+"01"+dataValBuff.toHexString(HexFormat.Default).uppercase()
-            println("CAN $hexCMD")
-            val payloadParts = payloadMaker.processCommandToFrames(hexCMD)
-            currentWriteOperationTotalMsgCount = payloadParts.size
-            mChatService?.makeOBDMultiCommand(payloadParts.map {
-                stringHexToOBDCommand(it)
-            }, DATAWRITE_OPERATION)
-            return
-        } else if (item.type == 2) {
-            // TCU activation write
-            if (newVal.length > 1) {
-                Toast.makeText(this, R.string.data_too_long, Toast.LENGTH_SHORT).show()
-                return
-            }
-            val actState = newVal.toInt()
-            val hexCMD = "3B"+("%02x".format(item.configId).uppercase())+(if (actState > 0) "01" else "00").uppercase()
-            println("CAN $hexCMD")
-            val payloadParts = payloadMaker.processCommandToFrames(hexCMD)
-            currentWriteOperationTotalMsgCount = payloadParts.size
-            mChatService?.makeOBDMultiCommand(payloadParts.map {
-                stringHexToOBDCommand(it)
-            }, DATAWRITE_OPERATION)
+
+        for (item in currentTCUProfile!!.initSeq) {
+            // Set diag mode
+            val diagPid = PID()
+            diagPid.mode = item
+            diagPid.PID = ""
+            mChatService?.makeOBDCommand(OBDCommand(diagPid).setIgnoreResult(true), NORESP)
+        }
+
+        if (newVal.length > item.fieldMaxLength) {
+            Toast.makeText(this, R.string.data_too_long, Toast.LENGTH_SHORT).show()
             return
         }
+
+        progressDialog!!.show()
+        val dataBuff = ByteArray(item.fieldMaxLength)
+        if (item.type == 2) {
+            dataBuff[0] = newVal.toInt().toByte()
+        } else {
+            newVal.toByteArray(charset = Charsets.US_ASCII).copyInto(dataBuff)
+        }
+
+        val hexCMD = currentTCUProfile!!.makeOBDWrite(item, dataBuff)
+
+        println("CAN $hexCMD")
+        val payloadParts = payloadMaker.processCommandToFrames(hexCMD)
+        currentWriteOperationTotalMsgCount = payloadParts.size
+        mChatService?.makeOBDMultiCommand(payloadParts.map {
+            stringHexToOBDCommand(it)
+        }, DATAWRITE_OPERATION)
+
         Toast.makeText(this, "NOT IMPLEMENTED", Toast.LENGTH_SHORT).show()
     }
 

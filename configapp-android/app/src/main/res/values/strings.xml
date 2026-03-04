@@ -37,4 +37,17 @@
     <string name="empty_data_warn">Are you sure you want to write blank data to this field?</string>
     <string name="activation">TCU activation</string>
     <string name="signal_level">Signal level</string>
+    <string name="continental20212">TCU 2012–2016 (Continental)</string>
+    <string name="device_type_not_selected">TCU Type not selected!</string>
+    <string name="choose_tcu_model">Choose TCU Model</string>
+    <string name="ficosa_gen2">TCU 2016-2019 (late AZE0 24/30 kWh, ZE1 40 kWh)</string>
+    <string name="signal_level_rssi">Signal level (RSSI)</string>
+    <string name="vehicle_definition">Vehicle definition</string>
+    <string name="obs_server_url">OBS Server URL</string>
+    <string name="obs_server_port">OBS Server Port</string>
+    <string name="imei">IMEI</string>
+    <string name="registered_net_name">Registered network name</string>
+    <string name="unique_id">Unique ID</string>
+    <string name="sim_info">SIM Info</string>
+    <string name="disconnect_first">Disconnect the connection first!</string>
 </resources>
