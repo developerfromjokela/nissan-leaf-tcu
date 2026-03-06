@@ -169,6 +169,9 @@ class MainActivity : AppCompatActivity() {
             .setCancelable(false)
             .setItems(items) { dialog, which ->
                 currentTCUProfile = PROFILES[which]
+                configItems.clear()
+                configItems.addAll(PROFILES[which].configItems)
+                tcuConfAdapter.notifyDataSetChanged()
                 dialog.dismiss()
             }
             .show()
