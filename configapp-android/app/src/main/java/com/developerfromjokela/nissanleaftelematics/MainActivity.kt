@@ -419,6 +419,12 @@ class MainActivity : AppCompatActivity() {
                                 // DATA from TCU
                                 handleReadFieldData(packet1.data[1].toUByte(), (packet1.data).sliceArray(2 until packet1.data.size))
                             }
+                            98 -> {
+                                // DATA from TCU GEN 2
+                                val dataId = (((packet1.data[1].toInt() and 0xFF) shl 8) or
+                                        (packet1.data[2].toInt() and 0xFF)).toUByte()
+                                handleReadFieldData(dataId, (packet1.data).sliceArray(3 until packet1.data.size))
+                            }
                             else -> {
                                 Toast.makeText(this, "Unknown message type: ${packet1.data[0].toInt()}", Toast.LENGTH_LONG).show()
                             }
