@@ -50,4 +50,8 @@
     <string name="unique_id">Unique ID</string>
     <string name="sim_info">SIM Info</string>
     <string name="disconnect_first">Disconnect the connection first!</string>
+    <string name="reading_data">Reading data</string>
+    <string name="reading_data_desc">Attempting to read data, please wait</string>
+    <string name="mainserverurl">MAINSERVERCONFIG</string>
+    <string name="apn_settings">APN Settings</string>
 </resources>

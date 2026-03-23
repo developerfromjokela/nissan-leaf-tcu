@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="5dp"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/fieldName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/apn_settings"
+        android:textSize="16sp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/readBtn"
+            style="@style/Widget.Material3.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="4dp"
+            android:layout_weight="0"
+            android:text="@string/read" />
+
+        <Button
+            android:id="@+id/writeBtn"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_weight="0"
+            android:text="@string/write" />
+    </LinearLayout>
+
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/valueField"
+        android:hint="@string/apn_name"
+        android:layout_width="match_parent"
+        android:maxLength="32"
+        android:maxLines="1"
+        android:layout_height="wrap_content"
+        android:layout_weight="1" />
+
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/user"
+        android:hint="@string/apn_user"
+        android:maxLength="32"
+        android:maxLines="1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1" />
+
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/password"
+        android:hint="@string/apn_pass"
+        android:maxLength="32"
+        android:maxLines="1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1" />
+
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/dns1"
+        android:hint="@string/dns1"
+        android:maxLength="32"
+        android:maxLines="1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1" />
+
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/dns2"
+        android:hint="@string/dns2"
+        android:maxLength="32"
+        android:maxLines="1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1" />
+
+    <View
+        android:id="@+id/divider2"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="4dp"
+        android:background="?android:attr/listDivider" />
+</LinearLayout>

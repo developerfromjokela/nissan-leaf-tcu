@@ -38,6 +38,7 @@ import com.developerfromjokela.nissanleaftelematics.profiles.FicosaGen2
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.pnuema.android.obd.commands.OBDCommand
 import com.pnuema.android.obd.models.PID
+import kotlin.random.Random
 
 
 class MainActivity : AppCompatActivity() {
@@ -61,6 +62,7 @@ class MainActivity : AppCompatActivity() {
         const val DATAREQ = 996
         const val MODULE_INIT_FINISH = 998
         const val CONN_INIT_FINISH = 997
+        const val DIAGMODE_CHANGE = 1010
         const val NORESP = 999
 
         const val DATAWRITE_OPERATION = 1002
@@ -93,6 +95,9 @@ class MainActivity : AppCompatActivity() {
     private var progressDialog: ProgressDialog? = null
 
     private var currentTCUProfile: AbstractTCUProfile? = null
+
+    private var currentReadId = 0
+    private var successfulReadId = -1
 
 
     private lateinit var wl: WakeLock
@@ -273,6 +278,7 @@ class MainActivity : AppCompatActivity() {
         mChatService?.makeOBDCommand(cmd, INIT_MSG_1)
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     private fun commandResult(msg: String, id: Int) {
         Log.e("MainActivity", "ID:$id, result:$msg");
         val initPid = PID()
@@ -402,30 +408,48 @@ class MainActivity : AppCompatActivity() {
                 initPid.mode = "$MODE_AT SP"
                 initPid.PID = "6"
                 val cmd = OBDCommand(initPid).setIgnoreResult(true)
+                mChatService?.makeOBDCommand(cmd, MODULE_ATCRA+4)
+            }
+            MODULE_ATCRA+4 -> {
+                if (!msg.contains("OK")) {
+                    Toast.makeText(this, "COMM INIT FAIL; STEP $id", Toast.LENGTH_SHORT).show()
+                    return
+                }
+                initPid.mode = "$MODE_AT FCSD"
+                initPid.PID = "300000"
+                val cmd = OBDCommand(initPid).setIgnoreResult(true)
                 mChatService?.makeOBDCommand(cmd, CONN_INIT_FINISH)
             }
             CONN_INIT_FINISH -> {
                 elmInit = true;
                 Toast.makeText(this, R.string.connection_init_finish, Toast.LENGTH_SHORT).show()
             }
+            DIAGMODE_CHANGE -> {
+                Log.e("DIAGMODE CHANGE", msg)
+            }
             DATAREQ -> {
-                Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
+                if (msg == "NODATA") return
                 try {
                     val parser = CanPayloadParser()
                     val packet1 = parser.parse(msg, skipIntegrityCheck = !dataIntegrity)
                     if (packet1.data != null) {
                         when (packet1.data[0].toInt()) {
                             97 -> {
+                                Log.e("INCOMING DATA", packet1.data.toHexString())
+                                successfulReadId = currentReadId
                                 // DATA from TCU
                                 handleReadFieldData(packet1.data[1].toUByte(), (packet1.data).sliceArray(2 until packet1.data.size))
                             }
                             98 -> {
+                                Log.e("INCOMING DATA GEN2", packet1.data.toHexString())
+                                successfulReadId = currentReadId
                                 // DATA from TCU GEN 2
                                 val dataId = (((packet1.data[1].toInt() and 0xFF) shl 8) or
                                         (packet1.data[2].toInt() and 0xFF)).toUByte()
                                 handleReadFieldData(dataId, (packet1.data).sliceArray(3 until packet1.data.size))
                             }
                             else -> {
+                                Log.e("UNKNOWN DATA", packet1.data.toHexString())
                                 Toast.makeText(this, "Unknown message type: ${packet1.data[0].toInt()}", Toast.LENGTH_LONG).show()
                             }
                         }
@@ -500,7 +524,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun onReadClick(item: TCUConfigItem) {
-        Log.e("MA", "0221"+("%02x".format(item.configId).uppercase()))
         if (!connected) {
             Toast.makeText(this, R.string.not_connected, Toast.LENGTH_SHORT).show()
             return
@@ -511,23 +534,72 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
+        progressDialog = ProgressDialog(this)
+        progressDialog!!.setTitle(R.string.reading_data)
+        progressDialog!!.setMessage(getString(R.string.reading_data_desc))
+        progressDialog!!.setProgressStyle(STYLE_HORIZONTAL)
+        progressDialog!!.max = 30
+
+        currentReadId = (100000..999999).random()
+        successfulReadId = -1
+
         for (item in currentTCUProfile!!.initSeq) {
             // Set diag mode
             val diagPid = PID()
             diagPid.mode = item
             diagPid.PID = ""
-            mChatService?.makeOBDCommand(OBDCommand(diagPid).setIgnoreResult(true), NORESP)
+            Log.e("DIAGMODE", diagPid.mode)
+            mChatService?.makeOBDCommand(OBDCommand(diagPid), NORESP)
         }
 
-        // Read value
-        val readPid = PID()
-        readPid.mode = currentTCUProfile!!.makeOBDRead(item)
-        readPid.PID = ""
-        mChatService?.makeOBDCommand(OBDCommand(readPid), DATAREQ)
+
+        fun sendReadCommand() {
+            // Read value
+            val readPid = PID()
+            readPid.mode = currentTCUProfile!!.makeOBDRead(item)
+            readPid.PID = ""
+            Log.e("MA", readPid.mode+readPid.PID)
+            mChatService?.makeOBDCommand(OBDCommand(readPid), DATAREQ)
+        }
+
+        progressDialog!!.show()
+        sendReadCommand()
+
+        Thread {
+            val timeoutMs = 10000L
+            val pollIntervalMs = 180L
+            val startTime = System.currentTimeMillis()
+
+            while (System.currentTimeMillis() - startTime < timeoutMs) {
+                Thread.sleep(pollIntervalMs)
+
+                if (currentReadId == successfulReadId) {
+                    Log.e("MA", "Read success for field ${item.configId}")
+                    runOnUiThread {
+                        progressDialog?.progress = 100
+                        progressDialog?.dismiss()
+                    }
+                    return@Thread
+                }
+
+                Log.e("MA", "No data yet for field ${item.configId}, retry...")
+                sendReadCommand()
+                runOnUiThread {
+                    progressDialog?.incrementProgressBy(1)
+                }
+            }
+
+            // Timed out
+            Log.e("MA", "Read timed out for field ${item.configId}")
+            runOnUiThread {
+                progressDialog!!.dismiss()
+            }
+        }.start()
+
     }
 
     @OptIn(ExperimentalStdlibApi::class)
-    private fun onWriteClick(item: TCUConfigItem, newVal: String, skipEmptyData: Boolean = false) {
+    private fun onWriteClick(item: TCUConfigItem, newVal: ByteArray, skipEmptyData: Boolean = false) {
         if (!connected) {
             Toast.makeText(this, R.string.not_connected, Toast.LENGTH_SHORT).show()
             return
@@ -538,7 +610,7 @@ class MainActivity : AppCompatActivity() {
         progressDialog!!.setMessage(getString(R.string.writing_data_desc))
         progressDialog!!.setProgressStyle(STYLE_HORIZONTAL)
 
-        if (newVal.trim().isEmpty() && !skipEmptyData) {
+        if (newVal.isEmpty() && !skipEmptyData) {
             MaterialAlertDialogBuilder(this).setTitle(R.string.empty_data)
                 .setMessage(R.string.empty_data_warn)
                 .setPositiveButton(android.R.string.ok) { _: DialogInterface, _: Int ->
@@ -556,23 +628,18 @@ class MainActivity : AppCompatActivity() {
             val diagPid = PID()
             diagPid.mode = item
             diagPid.PID = ""
-            mChatService?.makeOBDCommand(OBDCommand(diagPid).setIgnoreResult(true), NORESP)
+            mChatService?.makeOBDCommand(OBDCommand(diagPid), DIAGMODE_CHANGE)
         }
 
-        if (newVal.length > item.fieldMaxLength) {
+        if (newVal.size > item.fieldMaxLength) {
             Toast.makeText(this, R.string.data_too_long, Toast.LENGTH_SHORT).show()
             return
         }
 
         progressDialog!!.show()
-        val dataBuff = ByteArray(item.fieldMaxLength)
-        if (item.type == 2) {
-            dataBuff[0] = newVal.toInt().toByte()
-        } else {
-            newVal.toByteArray(charset = Charsets.US_ASCII).copyInto(dataBuff)
-        }
 
-        val hexCMD = currentTCUProfile!!.makeOBDWrite(item, dataBuff)
+
+        val hexCMD = currentTCUProfile!!.makeOBDWrite(item, newVal)
 
         println("CAN $hexCMD")
         val payloadParts = payloadMaker.processCommandToFrames(hexCMD)
