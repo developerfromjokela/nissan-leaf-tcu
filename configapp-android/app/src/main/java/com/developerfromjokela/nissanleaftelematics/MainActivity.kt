@@ -35,6 +35,7 @@ import com.developerfromjokela.nissanleaftelematics.diag.CanPayloadParser
 import com.developerfromjokela.nissanleaftelematics.profiles.AbstractTCUProfile
 import com.developerfromjokela.nissanleaftelematics.profiles.Continental2012
 import com.developerfromjokela.nissanleaftelematics.profiles.FicosaGen2
+import com.developerfromjokela.nissanleaftelematics.profiles.FicosaGen2_5
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.pnuema.android.obd.commands.OBDCommand
 import com.pnuema.android.obd.models.PID
@@ -68,9 +69,10 @@ class MainActivity : AppCompatActivity() {
         const val DATAWRITE_OPERATION = 1002
     }
 
-    private val PROFILES = arrayOf<AbstractTCUProfile>(
+    private val PROFILES = arrayOf(
         Continental2012(),
-        FicosaGen2()
+        FicosaGen2(),
+        FicosaGen2_5()
     )
 
     private var mConnectedDeviceName: String? = null

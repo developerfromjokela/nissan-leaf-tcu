@@ -40,7 +40,8 @@
     <string name="continental20212">TCU 2012–2016 (Continental)</string>
     <string name="device_type_not_selected">TCU Type not selected!</string>
     <string name="choose_tcu_model">Choose TCU Model</string>
-    <string name="ficosa_gen2">TCU 2016-2019 (late AZE0 24/30 kWh, ZE1 40 kWh)</string>
+    <string name="ficosa_gen2">TCU 2015-2017 (late AZE0 24/30 kWh)</string>
+    <string name="ficosa_gen2_5">TCU 2018-2019 (ZE1 40 kWh)</string>
     <string name="signal_level_rssi">Signal level (RSSI)</string>
     <string name="vehicle_definition">Vehicle definition</string>
     <string name="obs_server_url">OBS Server URL</string>
@@ -54,4 +55,6 @@
     <string name="reading_data_desc">Attempting to read data, please wait</string>
     <string name="mainserverurl">MAINSERVERCONFIG</string>
     <string name="apn_settings">APN Settings</string>
+    <string name="apn_name_tsp">APN (TSP)</string>
+    <string name="sms_num"><![CDATA[GDC -> TCU SMS Number]]></string>
 </resources>
