@@ -8,7 +8,7 @@
 This project is dedicated for reverse-engineering and finding how to communicate to TCU and issue commands/receive data. Project aims to bring TCU back to life using custom server.
 
 Info in this repository:
-- TCU firmware (06.27: ZE0 vehicles, 06.42: AZE0 vehicles)
+- TCU firmware (06.27: ZE0 vehicles, 06.42: AZE0 vehicles, firmware for FICOSA TCUs in gen2 folder)
 - Protocol used in server communication
   - Data capture for analysis
   - Documentation
