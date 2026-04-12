@@ -10,6 +10,8 @@ TCU in Nissan Leaf 2016 and newer have shared TCU part with Renault.
 Extracted and unzipped firmware from update package. 
 Base address is different for each firmware, 0x2A00000 for 283B0
 
+Firmware starting from 2017, 283C0319.5RL. Base address 0x10700000.
+
 ### SIM Slot
 
 Soldering a sim slot is needed, it does not come with one from factory.  
