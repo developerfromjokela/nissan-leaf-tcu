@@ -13,15 +13,17 @@ class FicosaGen2_5(
         TCUConfigItem(configId = 0x09, fieldLength = 20, type = 3, fieldMaxLength = 20, readOnly = true, uiName = R.string.signal_level),
         TCUConfigItem(configId = 0x81, fieldLength = 17, type = 0, fieldMaxLength = 17, readOnly = false, uiName = R.string.vin),
         TCUConfigItem(configId = 0x10, fieldLength = 128, type = 1, fieldMaxLength = 128, readOnly = false, uiName = R.string.apn_name),
-        TCUConfigItem(configId = 0x15, fieldLength = 128, type = 1, fieldMaxLength = 128, readOnly = false, uiName = R.string.apn_user),
-        TCUConfigItem(configId = 0x16, fieldLength = 128, type = 1, fieldMaxLength = 128, readOnly = false, uiName = R.string.apn_pass),
-        TCUConfigItem(configId = 0x11, fieldLength = 128, type = 1, fieldMaxLength = 128, readOnly = false, uiName = R.string.dns1),
-        TCUConfigItem(configId = 0x12, fieldLength = 128, type = 1, fieldMaxLength = 128, readOnly = false, uiName = R.string.dns2),
+        TCUConfigItem(configId = 0x15, fieldLength = 32, type = 1, fieldMaxLength = 32, readOnly = false, uiName = R.string.apn_user),
+        TCUConfigItem(configId = 0x16, fieldLength = 32, type = 1, fieldMaxLength = 32, readOnly = false, uiName = R.string.apn_pass),
+        TCUConfigItem(configId = 0x11, fieldLength = 32, type = 1, fieldMaxLength = 32, readOnly = false, uiName = R.string.dns1),
+        TCUConfigItem(configId = 0x12, fieldLength = 32, type = 1, fieldMaxLength = 32, readOnly = false, uiName = R.string.dns2),
         TCUConfigItem(configId = 0x14, fieldLength = 128, type = 1, fieldMaxLength = 128, readOnly = false, uiName = R.string.obs_server_url),
         TCUConfigItem(configId = 0x13, fieldLength = 128, type = 1, fieldMaxLength = 128, readOnly = false, uiName = R.string.obs_server_port),
         TCUConfigItem(configId = 0x31, fieldLength = 128, type = 1, fieldMaxLength = 128, readOnly = false, uiName = R.string.obs_server_url),
         TCUConfigItem(configId = 0x30, fieldLength = 128, type = 1, fieldMaxLength = 128, readOnly = false, uiName = R.string.obs_server_port),
-        TCUConfigItem(configId = 0x21, fieldLength = 128, type = 1, fieldMaxLength = 128, readOnly = false, uiName = R.string.sms_num),
+        TCUConfigItem(configId = 0x21, fieldLength = 20, type = 1, fieldMaxLength = 20, readOnly = false, uiName = R.string.sms_num),
+        TCUConfigItem(configId = 0x22, fieldLength = 20, type = 1, fieldMaxLength = 20, readOnly = false, uiName = R.string.sms_num_tsp),
+        TCUConfigItem(configId = 0x32, fieldLength = 128, type = 1, fieldMaxLength = 128, readOnly = false, uiName = R.string.tsp_pki),
     )
 ) : AbstractTCUProfile() {
     @OptIn(ExperimentalStdlibApi::class)

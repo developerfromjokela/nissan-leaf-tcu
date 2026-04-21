@@ -57,4 +57,6 @@
     <string name="apn_settings">APN Settings</string>
     <string name="apn_name_tsp">APN (TSP)</string>
     <string name="sms_num"><![CDATA[GDC -> TCU SMS Number]]></string>
+    <string name="sms_num_tsp"><![CDATA[TSP -> TCU SMS Number]]></string>
+    <string name="tsp_pki">TSP PKI</string>
 </resources>
