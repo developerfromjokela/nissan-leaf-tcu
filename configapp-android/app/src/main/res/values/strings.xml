@@ -57,6 +57,14 @@
     <string name="apn_settings">APN Settings</string>
     <string name="apn_name_tsp">APN (TSP)</string>
     <string name="sms_num"><![CDATA[GDC -> TCU SMS Number]]></string>
-    <string name="sms_num_tsp"><![CDATA[TSP -> TCU SMS Number]]></string>
+    <string name="sms_num_tsp"><![CDATA[TCU -> TSP SMS Number]]></string>
     <string name="tsp_pki">TSP PKI</string>
+    <string name="tsp_server_url">TSP Server URL</string>
+    <string name="tsp_server_port">TSP Server Port</string>
+    <string name="tsp_apn_name">TSP APN Name</string>
+    <string name="tsp_apn_user">TSP APN User</string>
+    <string name="tsp_apn_pass">TSP APN Password</string>
+    <string name="tsp_dns1">DNS1 (TSP)</string>
+    <string name="tsp_dns2">DNS2 (TSP)</string>
+    <string name="tsp_rootca">TSP RootCA</string>
 </resources>
