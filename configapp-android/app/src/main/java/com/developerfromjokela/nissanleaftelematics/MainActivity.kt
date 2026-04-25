@@ -420,6 +420,16 @@ class MainActivity : AppCompatActivity() {
                 initPid.mode = "$MODE_AT FCSD"
                 initPid.PID = "300000"
                 val cmd = OBDCommand(initPid).setIgnoreResult(true)
+                mChatService?.makeOBDCommand(cmd, MODULE_ATCRA+5)
+            }
+            MODULE_ATCRA+5 -> {
+                if (!msg.contains("OK")) {
+                    Toast.makeText(this, "COMM INIT FAIL; STEP $id", Toast.LENGTH_SHORT).show()
+                    return
+                }
+                initPid.mode = "$MODE_AT ST"
+                initPid.PID = "FF"
+                val cmd = OBDCommand(initPid).setIgnoreResult(true)
                 mChatService?.makeOBDCommand(cmd, CONN_INIT_FINISH)
             }
             CONN_INIT_FINISH -> {
