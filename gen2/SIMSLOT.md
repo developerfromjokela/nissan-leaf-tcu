@@ -19,7 +19,7 @@ Use temperature around 420-450 Celsius to quickly and effectively remove the slo
 Solder on new SIM slot by applying some flux on the contacts if available, and soldering the slot in orientation shown on the image (4G version). For 3G, the orientation is different.
 Remember to clean the flux after soldering with isopropyl alcohol for example.
 
-*BE CAREFUL!*   The slot may not lay flat on the PCB, there may be small components like resistors under the slot. They are small enough to not interfere too much with the slot, but are easy to accidentally knock off the board and cause issues with the SIM.
+*BE CAREFUL!*   The slot may not lay flat on the PCB (which is okay), there may be small components like resistors under the slot. They are small enough to not interfere too much with the slot, but are easy to accidentally knock off the board and cause issues with the SIM.
 
 ## Step 3: Confirm operation
 <img src="./img/s7.jpeg" width="600px">
