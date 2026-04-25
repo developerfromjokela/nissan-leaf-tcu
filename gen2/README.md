@@ -13,8 +13,11 @@ Base address is different for each firmware, 0x2A00000 for 283B0
 Firmware starting from 2017, 283C0319.5RL. Base address 0x10700000.
 
 ### SIM Slot
-
 Soldering a sim slot is needed, it does not come with one from factory.  
+
+CHECK FILE SIMSLOT.MD for detailed guide!
+
+3G SIM orientation:
 
 <img src="https://github.com/user-attachments/assets/2c85aa56-f7b3-409c-a7f5-5ee9c3a7cbf8" height="500px"/>
 
