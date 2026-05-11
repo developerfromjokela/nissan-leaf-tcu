@@ -11,7 +11,7 @@ Few links:
 <img src="./img/s1.jpeg" width="400px"><img src="./img/s3.jpeg" width="400px">
 
 Using a microsoldering station / heat gun, remove the old eUICC. Be careful to not accidentally unsolder nearby components.
-Use temperature around 420-450 Celsius to quickly and effectively remove the slot.
+Use temperature around 420-450 Celsius to quickly and effectively remove the chip.
 
 ## Step 2: Solder new SIM slot
 <img src="./img/s5.jpeg" width="400px"><img src="./img/s6.jpeg" width="400px">
