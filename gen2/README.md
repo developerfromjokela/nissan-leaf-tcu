@@ -17,8 +17,14 @@ Soldering a sim slot is needed, it does not come with one from factory.
 
 CHECK FILE SIMSLOT.MD for detailed guide!
 
-3G SIM orientation:
+**3G SIM orientation (30 kWh models):**
 
 <img src="https://github.com/user-attachments/assets/2c85aa56-f7b3-409c-a7f5-5ee9c3a7cbf8" height="500px"/>
 
 As you see the slot in this picture, top most right pin is ground of simslot(orange arrow), all other ones are data. The unsoldered pad on far left is also ground, both on top and bottom (blue arrow). Those ones are unused.
+
+**4G SIM orientation (40 kWh models / Alternative PCB):**
+
+For the 4G module PCB, the layout is different. Refer to the image below for the correct orientation:
+
+<img src="https://raw.githubusercontent.com/drrcastro/nissan-leaf-tcu/master/gen2/img/s7.jpeg" height="500px"/>
