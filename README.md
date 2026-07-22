@@ -23,5 +23,5 @@ Info in this repository:
 
 ## Honorable mentions
 - Huge thanks to Mickey and the team for shining a light on TCU's inner workings, [DEF CON 25 - Mickey Shkatov, Jesse Michael, Oleksandr Bazhaniuk - Driving down the rabbit hole](https://www.youtube.com/watch?v=5QBOmr_ZyLo)
-- [majbthrd for providing UART pinout](https://mynissanleaf.com/threads/tcu-teardown.34309/)
+- [majbthrd for providing UART pinout](http://web.archive.org/web/20250522142633/https://mynissanleaf.com/threads/tcu-teardown.34309/)
 - [Useful information regarding TCU unit](https://mynissanleaf.ru/viewtopic.php?id=966)
