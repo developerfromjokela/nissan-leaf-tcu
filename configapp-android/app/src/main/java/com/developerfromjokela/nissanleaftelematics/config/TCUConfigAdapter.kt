@@ -78,12 +78,6 @@ class TCUConfigAdapter(
 
         if (configItem.type == 6) {
             var svcHolder = rvHolder as FICOSA_ServicesViewHolder
-            configItem.currentReadValue = ByteArray(12)
-            configItem.currentReadValue?.set(1, 50)
-            configItem.currentReadValue?.set(8, 1)
-            configItem.currentReadValue?.set(9, 1)
-            configItem.currentReadValue?.set(10, 1)
-            configItem.currentReadValue?.set(11, 1)
             val validReadValue = configItem.currentReadValue != null && configItem.currentReadValue!!.isNotEmpty()
             svcHolder.svtb.isEnabled = validReadValue
             svcHolder.rlu.isEnabled = validReadValue
