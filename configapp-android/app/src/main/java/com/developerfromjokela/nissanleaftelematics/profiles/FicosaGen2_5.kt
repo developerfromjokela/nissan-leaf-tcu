@@ -9,6 +9,7 @@ class FicosaGen2_5(
     override var canTX: Int = 746,
     override var initSeq: List<String> = listOf("0210FA", "02311000", "02711001"),
     override var configItems: List<TCUConfigItem> = listOf(
+        TCUConfigItem(configId = 0x03, fieldLength = 12, type = 6, fieldMaxLength = 12, readOnly = false, uiName = R.string.services),
         TCUConfigItem(configId = 0x04, fieldLength = 1, type = 2, fieldMaxLength = 1, readOnly = false, uiName = R.string.activation),
         TCUConfigItem(configId = 0x09, fieldLength = 20, type = 3, fieldMaxLength = 20, readOnly = true, uiName = R.string.signal_level),
         TCUConfigItem(configId = 0x81, fieldLength = 17, type = 0, fieldMaxLength = 17, readOnly = false, uiName = R.string.vin),
@@ -39,7 +40,7 @@ class FicosaGen2_5(
                 // VIN write
                 return "3B81" + data.toHexString(HexFormat.Default).uppercase() + "0000"
             }
-            1 -> {
+            1, 6 -> {
                 // Normal write
                 return "3B" + ("%02x".format(item.configId)
                     .uppercase()) + "01" + data.toHexString(HexFormat.Default).uppercase()

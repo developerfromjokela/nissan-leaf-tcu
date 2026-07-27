@@ -34,12 +34,10 @@ import com.developerfromjokela.nissanleaftelematics.diag.CanPayloadMaker
 import com.developerfromjokela.nissanleaftelematics.diag.CanPayloadParser
 import com.developerfromjokela.nissanleaftelematics.profiles.AbstractTCUProfile
 import com.developerfromjokela.nissanleaftelematics.profiles.Continental2012
-import com.developerfromjokela.nissanleaftelematics.profiles.FicosaGen2
 import com.developerfromjokela.nissanleaftelematics.profiles.FicosaGen2_5
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.pnuema.android.obd.commands.OBDCommand
 import com.pnuema.android.obd.models.PID
-import kotlin.random.Random
 
 
 class MainActivity : AppCompatActivity() {
@@ -71,7 +69,6 @@ class MainActivity : AppCompatActivity() {
 
     private val PROFILES = arrayOf(
         Continental2012(),
-        FicosaGen2(),
         FicosaGen2_5()
     )
 

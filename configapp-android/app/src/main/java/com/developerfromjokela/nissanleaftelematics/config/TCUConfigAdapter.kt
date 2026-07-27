@@ -9,6 +9,9 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textfield.TextInputEditText
 import com.developerfromjokela.nissanleaftelematics.R
+import com.google.android.material.materialswitch.MaterialSwitch
+
+fun Boolean.toInt() = if (this) 1 else 0
 
 class TCUConfigAdapter(
     private val configItems: List<TCUConfigItem>,
@@ -34,7 +37,19 @@ class TCUConfigAdapter(
         val dns2: TextInputEditText = itemView.findViewById(R.id.dns2)
     }
 
+    class FICOSA_ServicesViewHolder(itemView: View) : ViewHolder(itemView) {
+        val svtb: MaterialSwitch = itemView.findViewById(R.id.svtb)
+        val rlu: MaterialSwitch = itemView.findViewById(R.id.rlu)
+        val horn: MaterialSwitch = itemView.findViewById(R.id.horn)
+        val remotestart: MaterialSwitch = itemView.findViewById(R.id.remotestart)
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        if (viewType == 6) {
+            val view = LayoutInflater.from(parent.context)
+                .inflate(R.layout.config_item_ficosa_svc, parent, false) // Replace with your actual layout file name
+            return FICOSA_ServicesViewHolder(view)
+        }
         if (viewType == 4) {
             val view = LayoutInflater.from(parent.context)
                 .inflate(R.layout.config_item_ficosa_apn, parent, false) // Replace with your actual layout file name
@@ -61,7 +76,43 @@ class TCUConfigAdapter(
             onReadClick(configItem)
         }
 
-        if (configItem.type == 4) {
+        if (configItem.type == 6) {
+            var svcHolder = rvHolder as FICOSA_ServicesViewHolder
+            configItem.currentReadValue = ByteArray(12)
+            configItem.currentReadValue?.set(1, 50)
+            configItem.currentReadValue?.set(8, 1)
+            configItem.currentReadValue?.set(9, 1)
+            configItem.currentReadValue?.set(10, 1)
+            configItem.currentReadValue?.set(11, 1)
+            val validReadValue = configItem.currentReadValue != null && configItem.currentReadValue!!.isNotEmpty()
+            svcHolder.svtb.isEnabled = validReadValue
+            svcHolder.rlu.isEnabled = validReadValue
+            svcHolder.horn.isEnabled = validReadValue
+            svcHolder.remotestart.isEnabled = validReadValue
+
+            if (validReadValue) {
+                svcHolder.svtb.isChecked = configItem.currentReadValue!![8] > 0
+                svcHolder.rlu.isChecked = configItem.currentReadValue!![9] > 0
+                svcHolder.horn.isChecked = configItem.currentReadValue!![10] > 0
+                svcHolder.remotestart.isChecked = configItem.currentReadValue!![11] > 0
+            }
+
+
+            holder.writeBtn.apply {
+                isEnabled = validReadValue
+                visibility = if (configItem.readOnly) View.GONE else View.VISIBLE
+                setOnClickListener {
+                    val dataBuff = configItem.currentReadValue!!.copyOf()
+
+                    dataBuff[8] = svcHolder.svtb.isChecked.toInt().toByte()
+                    dataBuff[9] = svcHolder.svtb.isChecked.toInt().toByte()
+                    dataBuff[10] = svcHolder.svtb.isChecked.toInt().toByte()
+                    dataBuff[11] = svcHolder.svtb.isChecked.toInt().toByte()
+
+                    onWriteClick(configItem, dataBuff)
+                }
+            }
+        } else if (configItem.type == 4) {
             val apnHolder = rvHolder as FICOSA_APNViewHolder
 
             if (configItem.currentReadValue != null) {
