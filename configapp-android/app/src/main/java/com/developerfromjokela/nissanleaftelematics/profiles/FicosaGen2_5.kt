@@ -44,10 +44,14 @@ class FicosaGen2_5(
                 crcData += crc16
                 return "3B81" + crcData.toHexString(HexFormat.Default).uppercase()
             }
-            1, 6 -> {
+            1 -> {
                 // Normal write
                 return "3B" + ("%02x".format(item.configId)
                     .uppercase()) + "01" + data.toHexString(HexFormat.Default).uppercase()
+            }
+            6 -> {
+                // SVC write
+                return "3B03" + data.toHexString(HexFormat.Default).uppercase()
             }
             2 -> {
                 // TCU activation write
