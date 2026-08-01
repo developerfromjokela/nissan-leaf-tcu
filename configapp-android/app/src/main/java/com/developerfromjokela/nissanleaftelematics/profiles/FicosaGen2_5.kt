@@ -38,6 +38,7 @@ class FicosaGen2_5(
         when (item.type) {
             0 -> {
                 // VIN write
+                // TODO calculate CRC
                 return "3B81" + data.toHexString(HexFormat.Default).uppercase() + "0000"
             }
             1, 6 -> {

@@ -141,8 +141,11 @@ class TCUConfigAdapter(
             }
 
             if (configItem.currentReadValue != null) {
-                if (configItem.type == 0 || configItem.type == 5) {
-                    holder.valueField.setText(String(configItem.currentReadValue!!))
+                if (configItem.type == 0) {
+                    val vin = String(configItem.currentReadValue!!.copyOfRange(0, configItem.currentReadValue!!.size-2))
+                    val crc = configItem.currentReadValue!!.copyOfRange(configItem.currentReadValue!!.size-2, configItem.currentReadValue!!.size)
+                    holder.fieldName.text = "${holder.itemView.context.getString(configItem.uiName)}, CRC: ${crc.toHexString()}"
+                    holder.valueField.setText(vin)
                 } else if (configItem.type == 1) {
                     holder.valueField.setText(String((configItem.currentReadValue!!).copyOfRange(1, configItem.currentReadValue!!.size-1)).trim { it <= ' ' })
                 } else if (configItem.type == 2) {
