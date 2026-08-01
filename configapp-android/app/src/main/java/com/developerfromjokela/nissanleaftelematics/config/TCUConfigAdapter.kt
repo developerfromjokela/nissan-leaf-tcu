@@ -9,6 +9,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textfield.TextInputEditText
 import com.developerfromjokela.nissanleaftelematics.R
+import com.developerfromjokela.nissanleaftelematics.utils.CRC16
 import com.google.android.material.materialswitch.MaterialSwitch
 
 fun Boolean.toInt() = if (this) 1 else 0
@@ -142,9 +143,11 @@ class TCUConfigAdapter(
 
             if (configItem.currentReadValue != null) {
                 if (configItem.type == 0) {
-                    val vin = String(configItem.currentReadValue!!.copyOfRange(0, configItem.currentReadValue!!.size-2))
+                    val vinBytes = configItem.currentReadValue!!.copyOfRange(0, configItem.currentReadValue!!.size-2)
+                    val vin = String(vinBytes)
                     val crc = configItem.currentReadValue!!.copyOfRange(configItem.currentReadValue!!.size-2, configItem.currentReadValue!!.size)
-                    holder.fieldName.text = "${holder.itemView.context.getString(configItem.uiName)}, CRC: ${crc.toHexString()}"
+                    val calcCRC = CRC16().calculateBytesLittleEndian(vinBytes)
+                    holder.fieldName.text = "${holder.itemView.context.getString(configItem.uiName)}, CRC: ${crc.toHexString()}, expected: ${calcCRC.toHexString()}"
                     holder.valueField.setText(vin)
                 } else if (configItem.type == 1) {
                     holder.valueField.setText(String((configItem.currentReadValue!!).copyOfRange(1, configItem.currentReadValue!!.size-1)).trim { it <= ' ' })

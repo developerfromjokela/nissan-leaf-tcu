@@ -1,15 +1,11 @@
 package com.developerfromjokela.nissanleaftelematics
 
-import android.widget.Toast
+import com.developerfromjokela.nissanleaftelematics.utils.CRC16
 import com.developerfromjokela.nissanleaftelematics.config.TCUConfigItem
-import com.developerfromjokela.nissanleaftelematics.diag.CanPacketParser
 import com.developerfromjokela.nissanleaftelematics.diag.CanPayloadMaker
 import com.developerfromjokela.nissanleaftelematics.diag.CanPayloadParser
 import com.developerfromjokela.nissanleaftelematics.profiles.Continental2012
 import org.junit.Test
-
-import org.junit.Assert.*
-import java.util.Arrays
 
 /**
  * Example local unit test, which will execute on the development machine (host).
@@ -50,5 +46,14 @@ class ExampleUnitTest {
         dataVal.copyInto(dataValBuff)
 
         println(Continental2012().makeOBDWrite(TCUConfigItem(0x13, 128, 1, 0, false, 128), dataValBuff))
+    }
+
+    @OptIn(ExperimentalUnsignedTypes::class, ExperimentalStdlibApi::class)
+    @Test
+    fun makeCRCForVIN() {
+        val crc16 = CRC16()
+        val value = crc16.calculateBytesLittleEndian("SJNFAAZE0U".toByteArray(charset = Charsets.US_ASCII))
+        println(value.toHexString())
+        assert(value.toHexString() == "3915")
     }
 }
