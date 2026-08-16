@@ -129,13 +129,12 @@ class MainActivity : AppCompatActivity() {
         })
 
         // UI
-
+        tcuConfAdapter.setHasStableIds(true)
         connectBtn = findViewById(R.id.connectBtn)
         selectedDevNameTxt = findViewById(R.id.deviceName)
         tcuConfigRV = findViewById(R.id.tcuConfigRV)
         tcuConfigRV.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
         tcuConfigRV.adapter = tcuConfAdapter
-        tcuConfAdapter.setHasStableIds(true)
         initUIListeners()
 
         if (ActivityCompat.checkSelfPermission(
