@@ -135,6 +135,7 @@ class MainActivity : AppCompatActivity() {
         tcuConfigRV = findViewById(R.id.tcuConfigRV)
         tcuConfigRV.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
         tcuConfigRV.adapter = tcuConfAdapter
+        tcuConfAdapter.setHasStableIds(true)
         initUIListeners()
 
         if (ActivityCompat.checkSelfPermission(
@@ -547,7 +548,7 @@ class MainActivity : AppCompatActivity() {
         progressDialog!!.setTitle(R.string.reading_data)
         progressDialog!!.setMessage(getString(R.string.reading_data_desc))
         progressDialog!!.setProgressStyle(STYLE_HORIZONTAL)
-        progressDialog!!.max = 30
+        progressDialog!!.isIndeterminate = true
 
         currentReadId = (100000..999999).random()
         successfulReadId = -1
@@ -585,22 +586,16 @@ class MainActivity : AppCompatActivity() {
                 if (currentReadId == successfulReadId) {
                     Log.e("MA", "Read success for field ${item.configId}")
                     runOnUiThread {
-                        progressDialog?.progress = 100
                         progressDialog?.dismiss()
                     }
                     return@Thread
-                }
-
-                Log.e("MA", "No data yet for field ${item.configId}, retry...")
-                sendReadCommand()
-                runOnUiThread {
-                    progressDialog?.incrementProgressBy(1)
                 }
             }
 
             // Timed out
             Log.e("MA", "Read timed out for field ${item.configId}")
             runOnUiThread {
+                Toast.makeText(this, R.string.timeout, Toast.LENGTH_LONG)
                 progressDialog!!.dismiss()
             }
         }.start()
@@ -618,6 +613,7 @@ class MainActivity : AppCompatActivity() {
         progressDialog!!.setTitle(R.string.writing_data)
         progressDialog!!.setMessage(getString(R.string.writing_data_desc))
         progressDialog!!.setProgressStyle(STYLE_HORIZONTAL)
+        progressDialog!!.isIndeterminate = true
 
         if (newVal.isEmpty() && !skipEmptyData) {
             MaterialAlertDialogBuilder(this).setTitle(R.string.empty_data)
@@ -657,8 +653,6 @@ class MainActivity : AppCompatActivity() {
         mChatService?.makeOBDMultiCommand(payloadParts.map {
             stringHexToOBDCommand(it)
         }, DATAWRITE_OPERATION)
-
-        Toast.makeText(this, "NOT IMPLEMENTED", Toast.LENGTH_SHORT).show()
     }
 
     override fun onRequestPermissionsResult(

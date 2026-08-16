@@ -71,4 +71,5 @@
     <string name="rlu">Remote Door Lock/Unlock</string>
     <string name="horn"><![CDATA[Remote Horn&Light]]></string>
     <string name="remotestart">Remote Start</string>
+    <string name="timeout">Timeout</string>
 </resources>

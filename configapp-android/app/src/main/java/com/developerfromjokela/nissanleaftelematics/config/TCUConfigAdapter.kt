@@ -186,5 +186,5 @@ class TCUConfigAdapter(
 
     override fun getItemCount(): Int = configItems.size
 
-    override fun getItemId(pos: Int): Long = configItems[pos].configId.toLong()
+    override fun getItemId(pos: Int): Long = pos.toLong()
 }
