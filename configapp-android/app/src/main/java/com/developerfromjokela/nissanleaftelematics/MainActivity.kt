@@ -546,7 +546,7 @@ class MainActivity : AppCompatActivity() {
         progressDialog = ProgressDialog(this)
         progressDialog!!.setTitle(R.string.reading_data)
         progressDialog!!.setMessage(getString(R.string.reading_data_desc))
-        progressDialog!!.setProgressStyle(STYLE_HORIZONTAL)
+        progressDialog!!.setProgressStyle(ProgressDialog.STYLE_SPINNER)
         progressDialog!!.isIndeterminate = true
 
         currentReadId = (100000..999999).random()
@@ -611,7 +611,7 @@ class MainActivity : AppCompatActivity() {
         progressDialog = ProgressDialog(this)
         progressDialog!!.setTitle(R.string.writing_data)
         progressDialog!!.setMessage(getString(R.string.writing_data_desc))
-        progressDialog!!.setProgressStyle(STYLE_HORIZONTAL)
+        progressDialog!!.setProgressStyle(ProgressDialog.STYLE_SPINNER)
         progressDialog!!.isIndeterminate = true
 
         if (newVal.isEmpty() && !skipEmptyData) {

@@ -11,8 +11,8 @@ android {
         applicationId = "com.developerfromjokela.nissanleaftelematics"
         minSdk = 24
         targetSdk = 34
-        versionCode = 18
-        versionName = "1.0.13"
+        versionCode = 19
+        versionName = "1.0.14"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
