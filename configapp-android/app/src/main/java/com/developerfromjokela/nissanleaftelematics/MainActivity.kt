@@ -653,6 +653,7 @@ class MainActivity : AppCompatActivity() {
         println("CAN $hexCMD")
         val payloadParts = payloadMaker.processCommandToFrames(hexCMD)
         currentWriteOperationTotalMsgCount = payloadParts.size
+
         mChatService?.makeOBDMultiCommand(payloadParts.map {
             stringHexToOBDCommand(it)
         }, DATAWRITE_OPERATION)

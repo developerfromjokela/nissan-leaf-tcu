@@ -4,6 +4,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -17,7 +19,6 @@ import android.util.Log;
 
 import com.developerfromjokela.nissanleaftelematics.MainActivity;
 import com.pnuema.android.obd.commands.BaseObdCommand;
-import com.pnuema.android.obd.commands.OBDCommand;
 
 /**
  * This class does all the work for setting up and managing Bluetooth
@@ -391,7 +392,8 @@ public class BluetoothService {
         private final BluetoothSocket mmSocket;
         private final InputStream mmInStream;
         private final OutputStream mmOutStream;
-       
+        private final ExecutorService mmExecutor = Executors.newSingleThreadExecutor();
+
         public ConnectedThread(BluetoothSocket socket, String socketType) {
             Log.d(TAG, "create ConnectedThread: " + socketType);
             mmSocket = socket;
@@ -406,42 +408,58 @@ public class BluetoothService {
                 Log.e(TAG, "temp sockets not created", e);
             }
 
-            mmInStream = tmpIn;            
+            mmInStream = tmpIn;
             mmOutStream = tmpOut;
         }
 
-        public void command(BaseObdCommand command, int ID) {
-            try {
-                command.run(mmInStream, mmOutStream);
-                // Share the sent message back to the UI Activity
-                mHandler.obtainMessage(MainActivity.MESSAGE_RESULT, ID, -1, command.getRawResult())
-                        .sendToTarget();
-            } catch (IOException e) {
-                Log.e(TAG, "Exception during write", e);
-            } catch (InterruptedException e) {
-                Log.e(TAG, "Exception during write", e);
-            }
+        public void command(final BaseObdCommand command, final int ID) {
+            mmExecutor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        command.run(mmInStream, mmOutStream);
+                        // Share the sent message back to the UI Activity
+                        mHandler.obtainMessage(MainActivity.MESSAGE_RESULT, ID, -1, command.getRawResult())
+                                .sendToTarget();
+                    } catch (IOException e) {
+                        Log.e(TAG, "Exception during write", e);
+                    } catch (InterruptedException e) {
+                        Log.e(TAG, "Exception during write", e);
+                    }
+                }
+            });
         }
 
-        public void multipartCommand(List<BaseObdCommand> commands, int ID) {
-            try {
-                for (int i = 0; i < commands.size(); i++) {
-                    BaseObdCommand command = commands.get(i);
-                    command.run(mmInStream, mmOutStream);
-                    // Share the sent message back to the UI Activity
-                    mHandler.obtainMessage(MainActivity.MESSAGE_RESULT_MULTI, ID, i, command.getRawResult())
-                            .sendToTarget();
+        /**
+         * Submits the batch of commands to run sequentially on the
+         * background executor. Returns immediately; never blocks the
+         * calling thread.
+         */
+        public void multipartCommand(final List<BaseObdCommand> commands, final int ID) {
+            mmExecutor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        for (int i = 0; i < commands.size(); i++) {
+                            BaseObdCommand command = commands.get(i);
+                            command.run(mmInStream, mmOutStream);
+                            // Share the sent message back to the UI Activity
+                            mHandler.obtainMessage(MainActivity.MESSAGE_RESULT_MULTI, ID, i, command.getRawResult())
+                                    .sendToTarget();
+                        }
+                        mHandler.obtainMessage(MainActivity.MESSAGE_RESULT_MULTI, ID, -1, null)
+                                .sendToTarget();
+                    } catch (IOException e) {
+                        Log.e(TAG, "Exception during write", e);
+                    } catch (InterruptedException e) {
+                        Log.e(TAG, "Exception during write", e);
+                    }
                 }
-                mHandler.obtainMessage(MainActivity.MESSAGE_RESULT_MULTI, ID, -1, null)
-                        .sendToTarget();
-            } catch (IOException e) {
-                Log.e(TAG, "Exception during write", e);
-            } catch (InterruptedException e) {
-                Log.e(TAG, "Exception during write", e);
-            }
+            });
         }
 
         public void cancel() {
+            mmExecutor.shutdownNow();
             try {
                 mmSocket.close();
             } catch (IOException e) {

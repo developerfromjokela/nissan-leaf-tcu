@@ -129,7 +129,6 @@ class TCUConfigAdapter(
                     apnHolder.password.text.toString().toByteArray(charset = Charsets.US_ASCII).copyInto(dataBuff, APN_FIELD_SIZE * 2)
                     apnHolder.dns1.text.toString().toByteArray(charset = Charsets.US_ASCII).copyInto(dataBuff, APN_FIELD_SIZE * 3)
                     apnHolder.dns2.text.toString().toByteArray(charset = Charsets.US_ASCII).copyInto(dataBuff, APN_FIELD_SIZE * 4)
-                    Log.e("AAA", dataBuff.toHexString())
                     //onWriteClick(configItem, dataBuff)
                 }
             }
@@ -186,4 +185,6 @@ class TCUConfigAdapter(
     }
 
     override fun getItemCount(): Int = configItems.size
+
+    override fun getItemId(pos: Int): Long = configItems[pos].configId.toLong()
 }
