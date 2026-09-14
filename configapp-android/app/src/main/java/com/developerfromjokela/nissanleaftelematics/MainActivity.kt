@@ -639,7 +639,7 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-        for (item in currentTCUProfile!!.initSeq) {
+        for (item in currentTCUProfile!!.initSeqWrite) {
             // Set diag mode
             val diagPid = PID()
             diagPid.mode = item

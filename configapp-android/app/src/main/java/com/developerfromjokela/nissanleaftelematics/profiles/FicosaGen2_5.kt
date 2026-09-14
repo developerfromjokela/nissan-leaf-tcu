@@ -8,7 +8,8 @@ class FicosaGen2_5(
     override var nameRes: Int = R.string.ficosa_gen2_5,
     override var canRX: Int = 783,
     override var canTX: Int = 746,
-    override var initSeq: List<String> = listOf("0210C0", "02311000", "02311001"),
+    override var initSeq: List<String> = listOf("0210C0"),
+    override var initSeqWrite: List<String> = listOf("0210FA", "02311000", "02311001"),
     override var configItems: List<TCUConfigItem> = listOf(
         TCUConfigItem(configId = 0x03, fieldLength = 12, type = 6, fieldMaxLength = 12, readOnly = false, uiName = R.string.services),
         TCUConfigItem(configId = 0x04, fieldLength = 1, type = 2, fieldMaxLength = 1, readOnly = false, uiName = R.string.activation),
@@ -70,7 +71,7 @@ class FicosaGen2_5(
 
     override fun makeOBDRead(item: TCUConfigItem): String {
         if (item.type == 7) {
-            return "1902FF"
+            return "031902FF"
         }
         return "0221"+("%02x".format(item.configId).uppercase())
     }
