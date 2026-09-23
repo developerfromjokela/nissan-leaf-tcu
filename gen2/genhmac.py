@@ -2,6 +2,7 @@
 import base64
 import hashlib
 import hmac
+import random
 import struct
 from datetime import datetime
 
@@ -190,13 +191,14 @@ print("base64", base64.b64encode(data).decode('ascii'))
 
 number = "358444444444"
 semi_num = semi(number)
+msg_ref = random.randint(0, 255).to_bytes(1, 'big')
 
 hdr = b''.join((
     b'\x00',  # SMSC info length, not included in PDU len
     b'\x11',  # First octet of SMS-SUBMIT message
     # 0x11 = message type SMS SUBMIT, validity
     # period present and relative
-    b'\x00',  # Message reference
+    msg_ref,  # Message reference
     len(number).to_bytes(1, 'big'),  # Length of the phone number (11)
     b'\x91',  # Type of number (0x81 = international)
     semi_num,  # Telephone number
