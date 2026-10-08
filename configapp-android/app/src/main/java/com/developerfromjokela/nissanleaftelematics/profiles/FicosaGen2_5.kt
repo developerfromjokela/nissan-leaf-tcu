@@ -11,6 +11,7 @@ class FicosaGen2_5(
     override var initSeq: List<String> = listOf("0210C0"),
     override var initSeqWrite: List<String> = listOf("0210FA", "02311000", "02311001"),
     override var configItems: List<TCUConfigItem> = listOf(
+        TCUConfigItem(configId = 1, fieldLength = 256, type = 4, fieldMaxLength = 256, readOnly = false, uiName = R.string.identifiers),
         TCUConfigItem(configId = 0x03, fieldLength = 12, type = 6, fieldMaxLength = 12, readOnly = false, uiName = R.string.services),
         TCUConfigItem(configId = 0x04, fieldLength = 1, type = 2, fieldMaxLength = 1, readOnly = false, uiName = R.string.activation),
         TCUConfigItem(configId = 0x09, fieldLength = 20, type = 3, fieldMaxLength = 20, readOnly = true, uiName = R.string.signal_level),
@@ -33,7 +34,8 @@ class FicosaGen2_5(
         TCUConfigItem(configId = 0x21, fieldLength = 20, type = 1, fieldMaxLength = 20, readOnly = false, uiName = R.string.sms_num),
         TCUConfigItem(configId = 0x22, fieldLength = 20, type = 1, fieldMaxLength = 20, readOnly = false, uiName = R.string.sms_num_tsp),
         TCUConfigItem(configId = 0x32, fieldLength = 128, type = 1, fieldMaxLength = 128, readOnly = false, uiName = R.string.tsp_pki),
-        TCUConfigItem(configId = 0x32, fieldLength = 128, type = 1, fieldMaxLength = 128, readOnly = false, uiName = R.string.tsp_rootca),
+        TCUConfigItem(configId = 0x33, fieldLength = 128, type = 1, fieldMaxLength = 128, readOnly = false, uiName = R.string.tsp_rootca),
+        TCUConfigItem(configId = 0x04, fieldLength = 256, type = 8, fieldMaxLength = 245, readOnly = false, uiName = R.string.sim_info_routine, customInitSeq = listOf("0210FA"))
     )
 ) : AbstractTCUProfile() {
     @OptIn(ExperimentalStdlibApi::class)
@@ -59,6 +61,10 @@ class FicosaGen2_5(
                 // Clear DTC
                 return "14FFFFFF"
             }
+            8 -> {
+                // Start routine
+                return "31"+("%02x".format(item.configId).uppercase())+"00"
+            }
             2 -> {
                 // TCU activation write
                 val actState = data[0].toInt()
@@ -72,6 +78,9 @@ class FicosaGen2_5(
     override fun makeOBDRead(item: TCUConfigItem): String {
         if (item.type == 7) {
             return "031902FF"
+        }
+        if (item.type == 8) {
+            return "0331"+("%02x".format(item.configId).uppercase())+"01"
         }
         return "0221"+("%02x".format(item.configId).uppercase())
     }

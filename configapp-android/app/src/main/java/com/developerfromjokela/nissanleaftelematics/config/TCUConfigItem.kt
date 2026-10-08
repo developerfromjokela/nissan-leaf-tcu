@@ -9,6 +9,8 @@ class TCUConfigItem {
     var fieldMaxLength: Int = -1
     var currentReadValue: ByteArray? = null
 
+    var customInitSeq: List<String>? = null
+
     constructor(
         configId: Int,
         fieldLength: Int,
@@ -16,6 +18,7 @@ class TCUConfigItem {
         uiName: Int,
         readOnly: Boolean,
         fieldMaxLength: Int,
+        customInitSeq: List<String>? = null
     ) {
         this.configId = configId
         this.fieldLength = fieldLength
@@ -23,5 +26,6 @@ class TCUConfigItem {
         this.uiName = uiName
         this.readOnly = readOnly
         this.fieldMaxLength = fieldMaxLength
+        this.customInitSeq = customInitSeq
     }
 }

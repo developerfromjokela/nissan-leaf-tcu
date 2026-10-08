@@ -1,11 +1,13 @@
 package com.developerfromjokela.nissanleaftelematics.config
 
-import android.util.Log
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textfield.TextInputEditText
 import com.developerfromjokela.nissanleaftelematics.R
@@ -22,7 +24,7 @@ class TCUConfigAdapter(
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     companion object {
-        private val APN_FIELD_SIZE = 32
+        private val COLLATION_ITM_LENGTH = 20
     }
 
     open class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -32,11 +34,11 @@ class TCUConfigAdapter(
         val writeBtn: Button = itemView.findViewById(R.id.writeBtn)
     }
 
-    class FICOSA_APNViewHolder(itemView: View) : ViewHolder(itemView) {
-        val password: TextInputEditText = itemView.findViewById(R.id.password)
-        val user: TextInputEditText = itemView.findViewById(R.id.user)
-        val dns1: TextInputEditText = itemView.findViewById(R.id.dns1)
-        val dns2: TextInputEditText = itemView.findViewById(R.id.dns2)
+    class FICOSA_CollationViewHolder(itemView: View) : ViewHolder(itemView) {
+        val naviId: TextInputEditText = itemView.findViewById(R.id.naviId)
+        val tcuId: TextInputEditText = itemView.findViewById(R.id.tcuId)
+        val simId: TextInputEditText = itemView.findViewById(R.id.simId)
+        val msn: TextInputEditText = itemView.findViewById(R.id.msn)
     }
 
     class FICOSA_ServicesViewHolder(itemView: View) : ViewHolder(itemView) {
@@ -54,8 +56,8 @@ class TCUConfigAdapter(
         }
         if (viewType == 4) {
             val view = LayoutInflater.from(parent.context)
-                .inflate(R.layout.config_item_ficosa_apn, parent, false) // Replace with your actual layout file name
-            return FICOSA_APNViewHolder(view)
+                .inflate(R.layout.config_item_collation, parent, false) // Replace with your actual layout file name
+            return FICOSA_CollationViewHolder(view)
         }
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.config_item, parent, false) // Replace with your actual layout file name
@@ -114,45 +116,47 @@ class TCUConfigAdapter(
                 }
             }
         } else if (configItem.type == 4) {
-            val apnHolder = rvHolder as FICOSA_APNViewHolder
+            val apnHolder = rvHolder as FICOSA_CollationViewHolder
+            apnHolder.writeBtn.isEnabled = false
 
-            if (configItem.currentReadValue != null) {
-                apnHolder.valueField.setText(String((configItem.currentReadValue!!).copyOf( APN_FIELD_SIZE)).trim { it <= ' ' })
-                apnHolder.user.setText(String((configItem.currentReadValue!!).copyOfRange(APN_FIELD_SIZE, APN_FIELD_SIZE*2)).trim { it <= ' ' })
-                apnHolder.password.setText(String((configItem.currentReadValue!!).copyOfRange(APN_FIELD_SIZE*2, APN_FIELD_SIZE*3)).trim { it <= ' ' })
-                apnHolder.dns1.setText(String((configItem.currentReadValue!!).copyOfRange(APN_FIELD_SIZE*3, APN_FIELD_SIZE*4)).trim { it <= ' ' })
-                apnHolder.dns2.setText(String((configItem.currentReadValue!!).copyOfRange(APN_FIELD_SIZE*4, APN_FIELD_SIZE*5)).trim { it <= ' ' })
+            if (configItem.currentReadValue != null && configItem.currentReadValue!!.size == 100) {
+                apnHolder.valueField.setText(String((configItem.currentReadValue!!).copyOf( COLLATION_ITM_LENGTH)).trim { it <= ' ' })
+                apnHolder.naviId.setText(String((configItem.currentReadValue!!).copyOfRange(COLLATION_ITM_LENGTH, COLLATION_ITM_LENGTH*2)).trim { it <= ' ' })
+                apnHolder.tcuId.setText(String((configItem.currentReadValue!!).copyOfRange(COLLATION_ITM_LENGTH*2, COLLATION_ITM_LENGTH*3)).trim { it <= ' ' })
+                apnHolder.simId.setText(String((configItem.currentReadValue!!).copyOfRange(COLLATION_ITM_LENGTH*3, COLLATION_ITM_LENGTH*4)).trim { it <= ' ' })
+                apnHolder.msn.setText(String((configItem.currentReadValue!!).copyOfRange(COLLATION_ITM_LENGTH*4, COLLATION_ITM_LENGTH*5)).trim { it <= ' ' })
             } else {
                 apnHolder.valueField.setText("")
-                apnHolder.user.setText("")
-                apnHolder.password.setText("")
-                apnHolder.dns1.setText("")
-                apnHolder.dns2.setText("")
-            }
-
-            holder.writeBtn.apply {
-                isEnabled = !configItem.readOnly
-                visibility = if (configItem.readOnly) View.GONE else View.VISIBLE
-                setOnClickListener {
-                    val dataBuff = ByteArray(configItem.fieldMaxLength) {0x20}
-
-                    apnHolder.valueField.text.toString().toByteArray(charset = Charsets.US_ASCII).copyInto(dataBuff, 0)
-                    apnHolder.user.text.toString().toByteArray(charset = Charsets.US_ASCII).copyInto(dataBuff, APN_FIELD_SIZE)
-                    apnHolder.password.text.toString().toByteArray(charset = Charsets.US_ASCII).copyInto(dataBuff, APN_FIELD_SIZE * 2)
-                    apnHolder.dns1.text.toString().toByteArray(charset = Charsets.US_ASCII).copyInto(dataBuff, APN_FIELD_SIZE * 3)
-                    apnHolder.dns2.text.toString().toByteArray(charset = Charsets.US_ASCII).copyInto(dataBuff, APN_FIELD_SIZE * 4)
-                    //onWriteClick(configItem, dataBuff)
-                }
+                apnHolder.naviId.setText("")
+                apnHolder.tcuId.setText("")
+                apnHolder.simId.setText("")
+                apnHolder.msn.setText("")
             }
         } else {
 
             // Configure value field
             holder.valueField.apply {
-                isEnabled = (!configItem.readOnly && configItem.type != 7)
+                isEnabled = (!configItem.readOnly && configItem.type > 6 && configItem.type < 9)
                 maxEms = configItem.fieldMaxLength.takeIf { it > 0 } ?: Int.MAX_VALUE
             }
+            holder.valueField.setTextIsSelectable(true)
             holder.valueField.setText("")
-            holder.writeBtn.setText(if (configItem.type == 7) R.string.erase_dtc else R.string.write)
+            holder.writeBtn.setText(when (configItem.type) {
+                7 -> R.string.erase_dtc
+                8 -> R.string.run
+                else -> {R.string.write}
+            })
+            holder.readBtn.setText(when (configItem.type) {
+                8 -> R.string.refresh
+                else -> {R.string.read}
+            })
+
+            holder.valueField.setOnLongClickListener {
+                val clipboard = rvHolder.itemView.context.getSystemService(ClipboardManager::class.java)
+                clipboard.setPrimaryClip(ClipData.newPlainText("text", holder.valueField.text))
+                Toast.makeText(holder.itemView.context, "Copied", Toast.LENGTH_SHORT).show()
+                true
+            }
 
             if (configItem.currentReadValue != null) {
                 if (configItem.type == 0) {
@@ -169,6 +173,34 @@ class TCUConfigAdapter(
                 } else if (configItem.type == 7) {
                     val report = DtcUtils.generateReport(configItem.currentReadValue!!)
                     holder.valueField.setText(report)
+                } else if (configItem.type == 8) {
+                    val statusByte = configItem.currentReadValue!![0].toInt()
+                    holder.valueField.setText(when (statusByte) {
+                        3 -> "FAILED!"
+                        1 -> "Running..."
+                        2 -> {
+                            if (configItem.currentReadValue!!.size > 1) {
+                                when (configItem.configId) {
+                                    4 -> {
+                                        val simStatus = when (configItem.currentReadValue!![1].toInt()) {
+                                            1 -> "SIM Removed"
+                                            3 -> "SIM Initialized"
+                                            4, 7 -> "SIM PIN Error"
+                                            else -> "Unknown SIM Status"
+                                        }
+                                        val rawData = String(configItem.currentReadValue!!.copyOfRange(2, configItem.currentReadValue!!.size-2))
+                                        "Status: $simStatus\nICCID: $rawData"
+                                    }
+                                    else -> {
+                                        String(configItem.currentReadValue!!.copyOfRange(1, configItem.currentReadValue!!.size-1))
+                                    }
+                                }
+                            } else {
+                                "Success!"
+                            }
+                        }
+                        else -> "Unknown (${statusByte})"
+                    })
                 } else {
                     val telAntLevel = configItem.currentReadValue!![0].toInt()
                     val receptionPower = configItem.currentReadValue!![1].toInt()

@@ -17,4 +17,14 @@
         android:enabled="true"
         android:title="@string/data_integrity_check"
         app:showAsAction="never" />
+
+    <item
+        android:id="@+id/debugConsole"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:checkable="true"
+        android:checked="false"
+        android:enabled="true"
+        android:title="@string/debug_console"
+        app:showAsAction="never" />
 </menu>

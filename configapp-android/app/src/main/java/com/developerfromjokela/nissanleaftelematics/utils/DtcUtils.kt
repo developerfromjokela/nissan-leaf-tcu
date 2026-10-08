@@ -53,30 +53,23 @@ class DtcUtils {
         }
 
         private fun buildReport(parsed: ParsedResponse): String = buildString {
-            appendLine("UDS ReadDTCInformation Report (Service 0x19, SubFunction 0x02 - reportDTCByStatusMask)")
-            appendLine("=".repeat(72))
-            appendLine("DTC Status Availability Mask: 0x%02X".format(parsed.statusAvailabilityMask))
-            appendLine("Number of DTCs reported: ${parsed.dtcs.size}")
-            appendLine()
-
             if (parsed.dtcs.isEmpty()) {
-                appendLine("No DTCs reported (module returned no matching fault codes).")
+                appendLine("No DTCs reported.")
             } else {
                 parsed.dtcs.forEachIndexed { index, dtc ->
                     appendLine("[${index + 1}] DTC ${dtc.code}")
-                    appendLine("      Raw code:     0x%06X".format(dtc.rawCode))
-                    appendLine("      Status byte:  0x%02X".format(dtc.status.raw))
+                    appendLine("CODE: 0x%06X".format(dtc.rawCode))
+                    appendLine("STATUS:  0x%02X".format(dtc.status.raw))
                     val flags = dtc.status.activeFlags()
                     if (flags.isEmpty()) {
-                        appendLine("      Status flags: none set")
+                        appendLine("== Status flags: none set")
                     } else {
-                        appendLine("      Status flags:")
+                        appendLine("== Status flags:")
                         flags.forEach { appendLine("        - $it") }
                     }
                     appendLine()
                 }
             }
-            appendLine("=".repeat(72))
         }
 
         fun generateReport(bytes: ByteArray): String = try {

@@ -10,6 +10,7 @@ class Continental2012(
     override var initSeq: List<String> = listOf("0210C0"),
     override var initSeqWrite: List<String> = listOf("0210C0"),
     override var configItems: List<TCUConfigItem> = listOf(
+        TCUConfigItem(configId = 1, fieldLength = 256, type = 4, fieldMaxLength = 256, readOnly = false, uiName = R.string.identifiers),
         TCUConfigItem(configId = 0x04, fieldLength = 1, type = 2, fieldMaxLength = 1, readOnly = false, uiName = R.string.activation),
         TCUConfigItem(configId = 0x09, fieldLength = 20, type = 3, fieldMaxLength = 20, readOnly = true, uiName = R.string.signal_level),
         TCUConfigItem(configId = 0x81, fieldLength = 17, type = 0, fieldMaxLength = 17, readOnly = false, uiName = R.string.vin),

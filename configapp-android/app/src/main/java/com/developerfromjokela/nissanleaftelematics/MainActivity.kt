@@ -27,6 +27,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.view.MenuProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.developerfromjokela.nissanleaftelematics.MainActivity.Companion.DATAREQ
 import com.developerfromjokela.nissanleaftelematics.bluetooth.BluetoothService
 import com.developerfromjokela.nissanleaftelematics.bluetooth.DeviceSelectActivity
 import com.developerfromjokela.nissanleaftelematics.config.TCUConfigAdapter
@@ -36,9 +37,12 @@ import com.developerfromjokela.nissanleaftelematics.diag.CanPayloadParser
 import com.developerfromjokela.nissanleaftelematics.profiles.AbstractTCUProfile
 import com.developerfromjokela.nissanleaftelematics.profiles.Continental2012
 import com.developerfromjokela.nissanleaftelematics.profiles.FicosaGen2_5
+import com.developerfromjokela.nissanleaftelematics.utils.LogConsole
+import com.developerfromjokela.nissanleaftelematics.utils.UDSError
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.pnuema.android.obd.commands.OBDCommand
 import com.pnuema.android.obd.models.PID
+import kotlin.experimental.or
 
 
 class MainActivity : AppCompatActivity() {
@@ -85,6 +89,7 @@ class MainActivity : AppCompatActivity() {
     private var elmInit = false
 
     private var currentWriteOperationTotalMsgCount = 0
+    private var totalWriteOperationTotalMsgCount = 0
 
     private lateinit var connectBtn: Button
     private lateinit var selectedDevNameTxt: TextView
@@ -99,6 +104,7 @@ class MainActivity : AppCompatActivity() {
     private var currentReadId = 0
     private var successfulReadId = -1
 
+    private val console by lazy { LogConsole(this) }
 
     private lateinit var wl: WakeLock
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -123,6 +129,13 @@ class MainActivity : AppCompatActivity() {
                     Log.e("MA", "Dataintegrity: $dataIntegrity")
                 } else if (menuItem.itemId == R.id.chooseDevice) {
                     chooseDevice()
+                } else if (menuItem.itemId == R.id.debugConsole) {
+                    menuItem.isChecked = !menuItem.isChecked
+                    if (menuItem.isChecked) {
+                        console.show()
+                    } else {
+                        console.hide()
+                    }
                 }
                 return true
             }
@@ -234,15 +247,8 @@ class MainActivity : AppCompatActivity() {
                 MESSAGE_RESULT -> commandResult(msg.obj.toString(), msg.arg1)
                 MESSAGE_RESULT_MULTI -> {
                     println("MSGResult Multi, ${msg.arg1} ${msg.obj}")
-                    if (msg.arg1 == DATAWRITE_OPERATION && progressDialog?.isShowing == true) {
-                        runOnUiThread {
-                            if (msg.arg2 == -1) {
-                                progressDialog?.dismiss()
-                                Toast.makeText(applicationContext, R.string.done_writing, Toast.LENGTH_LONG).show()
-                                return@runOnUiThread
-                            }
-                            progressDialog?.progress = (msg.arg2/currentWriteOperationTotalMsgCount)*100
-                        }
+                    if (msg.obj != null) {
+                        commandResult(msg.obj.toString(), msg.arg1)
                     }
                 }
                 MESSAGE_DEVICE_NAME -> {
@@ -461,13 +467,71 @@ class MainActivity : AppCompatActivity() {
                             }
                             0x59 -> {
                                 successfulReadId = currentReadId
-                                println("DTC "+ packet1.data.toHexString())
                                 handleReadFieldData(0x59.toUByte(), packet1.data)
                             }
+                            0x71 -> {
+                                successfulReadId = currentReadId
+                                progressDialog?.dismiss()
+                                handleReadRoutineData(packet1.data[1].toInt(), (packet1.data).sliceArray(2 until packet1.data.size))
+                            }
+                            0x7F -> {
+                                progressDialog?.dismiss()
+                                val udsErr = UDSError.parseOrNull(packet1.data!!)
+                                MaterialAlertDialogBuilder(this)
+                                    .setTitle(R.string.command_error)
+                                    .setMessage(udsErr?.toString() ?: "Unknown")
+                                    .setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
+                                    .show()
+                            }
+                            else -> {
+                                Log.e("UNKNOWN DATA", packet1.data.toHexString())
+                                Toast.makeText(this, "Unknown message type: ${packet1.data[0].toInt()}", Toast.LENGTH_LONG).show()
+                            }
+                        }
+                    } else {
+                        Toast.makeText(this, R.string.data_empty, Toast.LENGTH_LONG).show();
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    Toast.makeText(this, e.message, Toast.LENGTH_LONG).show()
+                }
+            }
+            DATAWRITE_OPERATION -> {
+                if (msg == "NODATA") {
+                    Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
+                    return
+                }
+                try {
+                    val parser = CanPayloadParser()
+                    val packet1 = parser.parse(msg, skipIntegrityCheck = !dataIntegrity)
+                    if (packet1.data != null) {
+                        when (packet1.data[0].toInt()) {
+                            1 -> {
+                                currentWriteOperationTotalMsgCount++
+                                progressDialog?.progress = currentWriteOperationTotalMsgCount
+                            }
                             0x54 -> {
-                                println("DTC CLEAR!")
                                 progressDialog?.dismiss()
                                 Toast.makeText(this, R.string.dtc_clear_success, Toast.LENGTH_LONG).show()
+                            }
+                            0x7B -> {
+                                progressDialog?.progress = totalWriteOperationTotalMsgCount
+                                progressDialog?.dismiss()
+                                Toast.makeText(this, R.string.done_writing, Toast.LENGTH_LONG).show()
+                            }
+                            0x7F -> {
+                                progressDialog?.dismiss()
+                                val udsErr = UDSError.parseOrNull(packet1.data!!)
+                                MaterialAlertDialogBuilder(this)
+                                    .setTitle(R.string.command_error)
+                                    .setMessage(udsErr?.toString() ?: "Unknown")
+                                    .setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
+                                    .show()
+                            }
+                            0x71 -> {
+                                progressDialog?.dismiss()
+                                Toast.makeText(this, "Launched routine!", Toast.LENGTH_SHORT).show()
+                                handleReadRoutineData(packet1.data[1].toInt(), (packet1.data).sliceArray(2 until packet1.data.size))
                             }
                             else -> {
                                 Log.e("UNKNOWN DATA", packet1.data.toHexString())
@@ -491,6 +555,14 @@ class MainActivity : AppCompatActivity() {
             it.currentReadValue = data
         }
         tcuConfAdapter.notifyItemChanged(configItems.indexOfFirst { it.configId.toUByte() == fieldId })
+    }
+
+    private fun handleReadRoutineData(routineId: Int, data: ByteArray) {
+        println("ROUTINE ID: $routineId, DATALEN:${data.size}")
+        configItems.find { it.configId == routineId && it.type == 8 }?.let {
+            it.currentReadValue = data
+        }
+        tcuConfAdapter.notifyItemChanged(configItems.indexOfFirst { it.configId == routineId && it.type == 8 })
     }
 
     private fun initUIListeners() {
@@ -564,7 +636,12 @@ class MainActivity : AppCompatActivity() {
         currentReadId = (100000..999999).random()
         successfulReadId = -1
 
-        for (item in currentTCUProfile!!.initSeq) {
+        var initSeq = currentTCUProfile!!.initSeq
+        if (!item.customInitSeq.isNullOrEmpty()) {
+            initSeq = item.customInitSeq!!
+        }
+
+        for (item in initSeq) {
             // Set diag mode
             val diagPid = PID()
             diagPid.mode = item
@@ -623,8 +700,8 @@ class MainActivity : AppCompatActivity() {
         progressDialog = ProgressDialog(this)
         progressDialog!!.setTitle(if (item.type == 7) R.string.clearing_dtc else R.string.writing_data)
         progressDialog!!.setMessage(getString(R.string.writing_data_desc))
-        progressDialog!!.setProgressStyle(ProgressDialog.STYLE_SPINNER)
-        progressDialog!!.isIndeterminate = true
+        progressDialog!!.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL)
+        progressDialog!!.isIndeterminate = false
 
         if (newVal.isEmpty() && !skipEmptyData) {
             MaterialAlertDialogBuilder(this).setTitle(R.string.empty_data)
@@ -638,8 +715,12 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
+        var initSeq = currentTCUProfile!!.initSeqWrite
+        if (!item.customInitSeq.isNullOrEmpty()) {
+            initSeq = item.customInitSeq!!
+        }
 
-        for (item in currentTCUProfile!!.initSeqWrite) {
+        for (item in initSeq) {
             // Set diag mode
             val diagPid = PID()
             diagPid.mode = item
@@ -659,11 +740,13 @@ class MainActivity : AppCompatActivity() {
 
         println("CAN $hexCMD")
         val payloadParts = payloadMaker.processCommandToFrames(hexCMD)
-        currentWriteOperationTotalMsgCount = payloadParts.size
+        totalWriteOperationTotalMsgCount = payloadParts.size
+        progressDialog!!.max = totalWriteOperationTotalMsgCount
+        currentWriteOperationTotalMsgCount = 0
 
         mChatService?.makeOBDMultiCommand(payloadParts.map {
             stringHexToOBDCommand(it)
-        }, if (item.type == 7) DATAREQ else DATAWRITE_OPERATION)
+        }, DATAWRITE_OPERATION)
     }
 
     override fun onRequestPermissionsResult(

@@ -76,4 +76,15 @@
     <string name="dtc_status">DTC Status</string>
     <string name="dtc_clear_success">DTC Codes Cleared Successfully!</string>
     <string name="clearing_dtc">Clearing DTCs</string>
+    <string name="run">Run</string>
+    <string name="identifiers">Identifiers (CollationInfo)</string>
+    <string name="navi_id">Navi ID</string>
+    <string name="tcu_id">TCU ID</string>
+    <string name="sim_id">SIM ID</string>
+    <string name="msn">MSN (Phone Number)</string>
+    <string name="sim_status">SIM Status</string>
+    <string name="sim_info_routine"><![CDATA[Retrieve & Update SIM Info]]></string>
+    <string name="debug_console">Debug Console</string>
+    <string name="command_error">Command Error!</string>
+    <string name="refresh">Refresh</string>
 </resources>
