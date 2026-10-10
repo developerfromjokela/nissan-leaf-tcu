@@ -11,7 +11,7 @@ hardware/OBD/DIAG procedure for when the quick check points at the board.
 
 ## Quick check with `tcu-sim-watch.sh`
 
-[`tcu-sim-watch.sh`](tcu-sim-watch.sh) wraps the USB AT and DIAG ports (§4, §8) in two commands.
+[`tcu-sim-watch.sh`](tcu-sim-watch.sh) wraps the USB AT, NMEA and DIAG ports (§4, §8) in three commands.
 
 ### Before you start
 
@@ -24,13 +24,34 @@ hardware/OBD/DIAG procedure for when the quick check points at the board.
 
 ### Commands
 
-| Command                       | Port      | What it does                                                         |
-|-------------------------------|-----------|----------------------------------------------------------------------|
-| `./tcu-sim-watch.sh net`      | `ttyUSB3` | Polls `AT+COPS?` / `AT+CGACT?` every `$INTERVAL` s, prints on change |
-| `./tcu-sim-watch.sh sms-diag` | `ttyUSB0` | Passive SMS sniff: QCSuper → pcap → tshark, one row per SMS          |
-| `./tcu-sim-watch.sh selftest` |           | Checks the parsers                                                   |
+| Command                       | Port                  | What it does                                                             |
+|-------------------------------|-----------------------|--------------------------------------------------------------------------|
+| `./tcu-sim-watch.sh net`      | `ttyUSB3`             | Polls `AT+COPS?` / `AT+CGACT?` every `$INTERVAL` s, prints on change     |
+| `./tcu-sim-watch.sh sms-diag` | `ttyUSB0`             | Passive SMS sniff: QCSuper → pcap → tshark, one row per SMS              |
+| `./tcu-sim-watch.sh debug`    | `ttyUSB3` + `ttyUSB2` | Sends `ATENABLEDEBUG`, streams the firmware log, saves `tcu-debug-*.log` |
+| `./tcu-sim-watch.sh selftest` |                       | Checks the parsers                                                       |
 
-Ports are overridable with `AT_PORT` and `DIAG_PORT`. `net` and `sms-diag` use different ports and can run side by side.
+Ports are overridable with `AT_PORT`, `DIAG_PORT` and `NMEA_PORT`. All three commands can run side by side.
+
+### Firmware debug log
+
+`ATENABLEDEBUG` on an AT port (`OK`) makes the TCU write its internal Legato log into the `ttyUSB2` NMEA stream;
+`ATDISABLEDEBUG` turns it off. Log lines never start with `$`, so `debug` drops the NMEA sentences and shows only the
+log. Re-enabling (`ATDISABLEDEBUG` then `ATENABLEDEBUG`) is said to separate the two on some units; `debug` does that,
+but the filter is what makes it reliable. Tip from the opencarwings developer: anything the TCU refuses gets logged
+here.
+
+Useful lines:
+
+| Line                                                        | Meaning                                               |
+|-------------------------------------------------------------|-------------------------------------------------------|
+| `[MDM] ModemDataMng SetUpProf 1 APN: <apn>`                 | APN the TCU uses for its own data session             |
+| `[MDM] … start session error: other failures for prof 1`    | Network refused that session — usually the APN        |
+| `[MDM] TimeoutsAndRetries: Tryouts expired for profile [1]` | TCU gave up for now, retries later                    |
+| `SMS RX Handler. Received B message from <number> '…'`      | Binary SMS reached the application                    |
+| `[SMS]OK: source of the SMS VALID` / `[SMS]OK: HMAC VALID`  | Sender and signature accepted                         |
+| `Executing SMS` → `Adding action [Server: 0xF6]`            | Command accepted and queued for the server            |
+| `Connection state is 0`                                     | No data session — queued command can't be fetched yet |
 
 ### Reading `net`
 
@@ -60,7 +81,7 @@ QCSuper with unbuffered binary writes so rows show up immediately.
 
 A remote command (AC, charge) is: server sends a **binary** ACP wake SMS, HMAC-SHA1 signed → TCU checks sender +
 signature → TCU connects to the server and fetches the command. Periodic uploads already reaching the server prove the
-last step; test the rest in order with `sms-diag` running:
+last step; test the rest in order with `sms-diag` and `debug` running:
 
 1. **Control:** text the car's number from a phone. A row with DCS `0` and your text must appear. If not, this carrier
    delivers SMS some way the DIAG capture doesn't decode (e.g. IMS) — go UART.
@@ -69,11 +90,16 @@ last step; test the rest in order with `sms-diag` running:
 3. **Provider test without opencarwings:** send `payload` `"AID/"` (= `00 80 FF`) with `encoding` `BINARY` straight to
    the provider's API. Must arrive as DCS `4`, `00 80 ff`.
 
-**DCS `8` with every byte ≥ `0x80` turned into `FFFD`** means the SMS provider decoded the binary payload as UTF-8
-text and resent it as UCS-2. opencarwings sends a correct request (`payload` base64 + `encoding: BINARY`), so the fix
-is on the provider side: get it to deliver `TP-DCS 0x04`, or pick a provider that does. Don't enable an "always use
-GSM 03.38" style option — that is a text setting and makes it worse. The TCU can only reject a corrupted message, so
-whether the default HMAC key is accepted can only be tested once step 3 passes.
+**DCS `8` with every byte ≥ `0x80` turned into `FFFD`** means the SMS provider decoded the binary payload as UTF-8 text
+and resent it as UCS-2. opencarwings sends a correct request (`payload` base64 + `encoding: BINARY`), so the fix is on
+the provider side: get it to deliver `TP-DCS 0x04`, or pick a provider that does. Don't enable an "always use GSM 03.38"
+style option — that is a text setting and makes it worse. The TCU can only reject a corrupted message, so whether the
+default HMAC key is accepted can only be tested once step 3 passes.
+
+Once the SMS arrives intact, the `debug` log shows the TCU's decision: `HMAC VALID` and `Executing SMS` mean the wake
+SMS is fine (the default opencarwings key is accepted on this unit). If it's followed by `Connection state is 0`
+and `start session error … prof 1`, the remaining problem is the APN of the TCU's data profile — check which APN
+`SetUpProf 1` names and fix that profile (§3, §9).
 
 opencarwings caveat (as of 2026-10): in `tculink/coordinators/ficosa2016.py` a custom per-car HMAC key is parsed with
 `bytes.fromhex(hmac_key)` instead of `car.hmac_key`, so setting one breaks every command. Leave it empty.
@@ -131,11 +157,11 @@ silently rejected ([CAN.md](../CAN.md)).
 
 Five nodes, `sierra` driver, USB interfaces 00–04:
 
-| Node                 | Role                                                 |
-|----------------------|------------------------------------------------------|
-| `ttyUSB0`, `ttyUSB1` | DIAG — silent to `AT`, this is the QCSuper/QPST port |
-| `ttyUSB2`            | NMEA — streams `$GPRMC`, `$GNGNS`, `$GPGGA`          |
-| `ttyUSB3`, `ttyUSB4` | AT                                                   |
+| Node                 | Role                                                                            |
+|----------------------|---------------------------------------------------------------------------------|
+| `ttyUSB0`, `ttyUSB1` | DIAG — silent to `AT`, this is the QCSuper/QPST port                            |
+| `ttyUSB2`            | NMEA — streams `$GPRMC`, `$GNGNS`, `$GPGGA`; firmware log after `ATENABLEDEBUG` |
+| `ttyUSB3`, `ttyUSB4` | AT                                                                              |
 
 **The AT port is Ficosa's application layer, not the Sierra modem:**
 
@@ -146,7 +172,8 @@ ATI → Manufacturer: Ficosa International / Model: TCU Gen2 Kai / Revision: CX.
 It replaces the modem's AT interpreter with a small curated subset and bare-`ERROR`s the rest — including every SIM
 command and all Sierra `AT!` vendor commands.
 
-- **Works:** `ATE`, `ATI`/`ATI3`/`ATI9`, `AT+GMM`, `AT+COPS?`, `AT+CGDCONT?`
+- **Works:** `ATE`, `ATI`/`ATI3`/`ATI9`, `AT+GMM`, `AT+COPS?`, `AT+CGDCONT?`, `AT+CGACT?`, `ATENABLEDEBUG`/
+  `ATDISABLEDEBUG`
 - **`ERROR`:** `AT+CPIN?`, `AT+CSQ`, `AT+CIMI`, `AT+CCID?`, `AT+CFUN?`, `AT+CREG?`,
   `AT+CGREG?`, `AT+CEER`, `AT+CGATT?`, `AT+CPAS`, `AT+CLAC`, `AT&V`, `AT+CMEE`, `AT+GMI`,
   `AT+GMR`, `AT+CGSN`, `AT+CNUM`, `AT!ENTERCND`, `AT!GSTATUS?`, and all `$`/`AT$` forms
@@ -329,7 +356,9 @@ TX idles logic-high and bursts at power-up; RX is the adjacent pin that idles hi
 > adapter can damage the module. Use a level shifter, ground first.
 
 Worth it, because `$SIM_STATUS`, `$SIM_INFO`, `$IMSI`, `$DTC`, `$RSSI` and
-`$DBGTCU,1` / `$DBGLOG,1` boot tracing all work there and none work over USB. Firmware log strings to expect:
+`$DBGTCU,1` / `$DBGLOG,1` boot tracing all work there and none work over USB. (The runtime firmware log *is*
+available over USB via `ATENABLEDEBUG` — see the quick check — but not the SIM/IMSI queries or boot trace.) Firmware log
+strings to expect:
 
 | String                                               | Meaning                               |
 |------------------------------------------------------|---------------------------------------|
