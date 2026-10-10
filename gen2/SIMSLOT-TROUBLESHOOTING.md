@@ -86,7 +86,7 @@ opencarwings caveat (as of 2026-10): in `tculink/coordinators/ficosa2016.py` a c
 
 | Symptom                                         |                                                                                                                                                                                                                    |
 |-------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| ICCID in NissanConnect still shows the old eSIM | Normal, never updates. Confirmed by @smachj, @junior013, @albertbm in [#15](https://github.com/developerfromjokela/nissan-leaf-tcu/discussions/15). Don't use as a test.                                           |
+| ICCID in NissanConnect still shows the old eSIM | ~Normal, never updates. Confirmed by @smachj, @junior013, @albertbm in [#15](https://github.com/developerfromjokela/nissan-leaf-tcu/discussions/15). Don't use as a test.~ It's possible to correct ICCID, use "Retrieve SIM information" routine in configuration app                                           |
 | NissanConnect services never return             | Nissan shut the AZE0/ZE1 backend down **2026-03-30**. Target [opencarwings](https://github.com/developerfromjokela/opencarwings).                                                                                  |
 | Remote commands (AC, charge) don't work         | Unsolved on ZE1 — activation SMS is HMAC-SHA1 signed, key not yet rewritable over OBD. Periodic messages do get through. Check binary SMS delivery first: [Debugging remote commands](#debugging-remote-commands). |
 
