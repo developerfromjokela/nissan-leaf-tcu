@@ -110,7 +110,11 @@ cmd_debug() {
   open_port "$NMEA_PORT"
   local log="tcu-debug-$(date +%Y%m%d-%H%M%S).log"
   at "$AT_PORT" ATDISABLEDEBUG >/dev/null
-  echo "> ATENABLEDEBUG: $(at "$AT_PORT" ATENABLEDEBUG | paste -sd' ' -), logging to $log"
+  until at "$AT_PORT" ATENABLEDEBUG | grep -qx OK; do
+    echo "$(ts) ATENABLEDEBUG not accepted yet (TCU booting?), retrying" >&2
+    sleep 2
+  done
+  echo "> ATENABLEDEBUG: OK, logging to $log"
   tr -d '\r' <"$NMEA_PORT" | grep --line-buffered -v '^\$' | tee "$log"
 }
 

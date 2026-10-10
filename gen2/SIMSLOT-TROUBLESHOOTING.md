@@ -38,20 +38,21 @@ Ports are overridable with `AT_PORT`, `DIAG_PORT` and `NMEA_PORT`. All three com
 `ATENABLEDEBUG` on an AT port (`OK`) makes the TCU write its internal Legato log into the `ttyUSB2` NMEA stream;
 `ATDISABLEDEBUG` turns it off. Log lines never start with `$`, so `debug` drops the NMEA sentences and shows only the
 log. Re-enabling (`ATDISABLEDEBUG` then `ATENABLEDEBUG`) is said to separate the two on some units; `debug` does that,
-but the filter is what makes it reliable. Tip from the opencarwings developer: anything the TCU refuses gets logged
+but the filter is what makes it reliable. Debug mode resets on every TCU reboot and `ATENABLEDEBUG` isn't
+accepted for a few seconds after the ports appear, so `debug` retries until it gets `OK`. Tip from the opencarwings developer: anything the TCU refuses gets logged
 here.
 
 Useful lines:
 
-| Line                                                        | Meaning                                               |
-|-------------------------------------------------------------|-------------------------------------------------------|
-| `[MDM] ModemDataMng SetUpProf 1 APN: <apn>`                 | APN the TCU uses for its own data session             |
-| `[MDM] … start session error: other failures for prof 1`    | Network refused that session — usually the APN        |
-| `[MDM] TimeoutsAndRetries: Tryouts expired for profile [1]` | TCU gave up for now, retries later                    |
-| `SMS RX Handler. Received B message from <number> '…'`      | Binary SMS reached the application                    |
-| `[SMS]OK: source of the SMS VALID` / `[SMS]OK: HMAC VALID`  | Sender and signature accepted                         |
-| `Executing SMS` → `Adding action [Server: 0xF6]`            | Command accepted and queued for the server            |
-| `Connection state is 0`                                     | No data session — queued command can't be fetched yet |
+| Line                                                       | Meaning                                                                 |
+|------------------------------------------------------------|-------------------------------------------------------------------------|
+| `SMS RX Handler. Received B message from <number> '…'`     | Binary SMS reached the application                                      |
+| `[SMS]OK: source of the SMS VALID` / `[SMS]OK: HMAC VALID` | Sender and signature accepted                                           |
+| `Executing SMS` → `Adding action [Server: 0xF6]`           | Command accepted and queued for the server                              |
+| `Connection state is 0`                                    | Not connected *yet* — logged before every server exchange, not an error |
+| `Connecting to http://<server>:80` … `POST /`              | TCU contacting the server configured over OBD                           |
+| `Status OK: 200.` → `Deleting action` → `Number of actions: 0` | Server answered, command completed                                  |
+| `[MDM] SetUpProf 1 APN: nissancnt.fr` + `start session error … prof 1` | Separate secondary session (likely the navi's), fails on non-Nissan SIMs. Not needed for server traffic, which uses the default bearer |
 
 ### Reading `net`
 
@@ -96,10 +97,10 @@ the provider side: get it to deliver `TP-DCS 0x04`, or pick a provider that does
 style option — that is a text setting and makes it worse. The TCU can only reject a corrupted message, so whether the
 default HMAC key is accepted can only be tested once step 3 passes.
 
-Once the SMS arrives intact, the `debug` log shows the TCU's decision: `HMAC VALID` and `Executing SMS` mean the wake
-SMS is fine (the default opencarwings key is accepted on this unit). If it's followed by `Connection state is 0`
-and `start session error … prof 1`, the remaining problem is the APN of the TCU's data profile — check which APN
-`SetUpProf 1` names and fix that profile (§3, §9).
+Once the SMS arrives intact, the `debug` log shows the whole chain: `HMAC VALID` and `Executing SMS` mean the wake SMS
+was accepted (the default opencarwings key works on this unit). The TCU then POSTs to its server over the default
+bearer and should log `Status OK: 200.` and `Deleting action`. If it stops before that, the lines after `Connecting
+to` say why (DNS, TCP, HTTP status). The profile 1 / `nissancnt.fr` errors run in parallel and don't block this.
 
 opencarwings caveat (as of 2026-10): in `tculink/coordinators/ficosa2016.py` a custom per-car HMAC key is parsed with
 `bytes.fromhex(hmac_key)` instead of `car.hmac_key`, so setting one breaks every command. Leave it empty.
