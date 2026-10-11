@@ -5,6 +5,7 @@ set -uo pipefail
 
 AT_PORT=${AT_PORT:-/dev/ttyUSB3}
 DIAG_PORT=${DIAG_PORT:-/dev/ttyUSB0}
+NMEA_PORT=${NMEA_PORT:-/dev/ttyUSB2}
 INTERVAL=${INTERVAL:-5}
 AT_TIMEOUT=${AT_TIMEOUT:-3}
 QCSUPER_PYTHON=${QCSUPER_PYTHON:-uvx --from qcsuper python}
@@ -14,9 +15,10 @@ usage() {
 usage: $0 <command>
   net         poll AT+COPS? / AT+CGACT? every \$INTERVAL s, print on change   (\$AT_PORT)
   sms-diag    passive SMS sniff on DIAG via qcsuper + tshark                 (\$DIAG_PORT)
+  debug       ATENABLEDEBUG, stream firmware log from NMEA port + tcu-debug-*.log (\$AT_PORT, \$NMEA_PORT)
   selftest    check the +COPS parser
 
-env: AT_PORT=$AT_PORT DIAG_PORT=$DIAG_PORT INTERVAL=$INTERVAL
+env: AT_PORT=$AT_PORT DIAG_PORT=$DIAG_PORT NMEA_PORT=$NMEA_PORT INTERVAL=$INTERVAL
 EOF
   exit 1
 }
@@ -103,6 +105,19 @@ cmd_sms_diag() {
       -e frame.time -e gsm_sms.tp-oa -e gsm_sms.tp-dcs -e gsm_sms.sms_text
 }
 
+cmd_debug() {
+  open_port "$AT_PORT"
+  open_port "$NMEA_PORT"
+  local log="tcu-debug-$(date +%Y%m%d-%H%M%S).log"
+  at "$AT_PORT" ATDISABLEDEBUG >/dev/null
+  until at "$AT_PORT" ATENABLEDEBUG | grep -qx OK; do
+    echo "$(ts) ATENABLEDEBUG not accepted yet (TCU booting?), retrying" >&2
+    sleep 2
+  done
+  echo "> ATENABLEDEBUG: OK, logging to $log"
+  tr -d '\r' <"$NMEA_PORT" | grep --line-buffered -v '^\$' | tee "$log"
+}
+
 cmd_selftest() {
   [[ $(parse_cops '+COPS: 0,0,"One HU",7') == "REGISTERED One HU LTE" ]] &&
   [[ $(parse_cops '+COPS: 0,0,"Limited Service",0') == LIMITED* ]] &&
@@ -115,6 +130,7 @@ cmd_selftest() {
 case ${1:-} in
   net) cmd_net ;;
   sms-diag) cmd_sms_diag ;;
+  debug) cmd_debug ;;
   selftest) cmd_selftest ;;
   *) usage ;;
 esac
