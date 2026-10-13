@@ -136,7 +136,7 @@ class TCUConfigAdapter(
 
             // Configure value field
             holder.valueField.apply {
-                isEnabled = (!configItem.readOnly && configItem.type > 6 && configItem.type < 9)
+                isEnabled = (!configItem.readOnly && configItem.type != 7 && configItem.type != 8)
                 maxEms = configItem.fieldMaxLength.takeIf { it > 0 } ?: Int.MAX_VALUE
             }
             holder.valueField.setTextIsSelectable(true)
@@ -150,13 +150,6 @@ class TCUConfigAdapter(
                 8 -> R.string.refresh
                 else -> {R.string.read}
             })
-
-            holder.valueField.setOnLongClickListener {
-                val clipboard = rvHolder.itemView.context.getSystemService(ClipboardManager::class.java)
-                clipboard.setPrimaryClip(ClipData.newPlainText("text", holder.valueField.text))
-                Toast.makeText(holder.itemView.context, "Copied", Toast.LENGTH_SHORT).show()
-                true
-            }
 
             if (configItem.currentReadValue != null) {
                 if (configItem.type == 0) {
