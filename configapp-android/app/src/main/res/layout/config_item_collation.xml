@@ -50,8 +50,7 @@
         android:layout_weight="1"
         android:hint="@android:string/unknownName"
         android:maxLength="128"
-        android:maxLines="1"
-        android:textIsSelectable="true" />
+        android:maxLines="1" />
 
     <com.google.android.material.textfield.TextInputEditText
         android:id="@+id/naviId"
@@ -60,8 +59,7 @@
         android:layout_weight="1"
         android:hint="@string/navi_id"
         android:maxLength="128"
-        android:maxLines="1"
-        android:textIsSelectable="true" />
+        android:maxLines="1" />
 
     <com.google.android.material.textfield.TextInputEditText
         android:id="@+id/tcuId"
@@ -70,8 +68,7 @@
         android:layout_weight="1"
         android:hint="@string/tcu_id"
         android:maxLength="128"
-        android:maxLines="1"
-        android:textIsSelectable="true" />
+        android:maxLines="1" />
 
     <com.google.android.material.textfield.TextInputEditText
         android:id="@+id/simId"
@@ -80,8 +77,7 @@
         android:layout_weight="1"
         android:hint="@string/sim_id"
         android:maxLength="128"
-        android:maxLines="1"
-        android:textIsSelectable="true" />
+        android:maxLines="1" />
 
     <com.google.android.material.textfield.TextInputEditText
         android:id="@+id/msn"
@@ -90,8 +86,7 @@
         android:layout_weight="1"
         android:hint="@string/msn"
         android:maxLength="128"
-        android:maxLines="1"
-        android:textIsSelectable="true" />
+        android:maxLines="1" />
 
     <View
         android:id="@+id/divider2"
